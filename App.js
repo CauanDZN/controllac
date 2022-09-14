@@ -1,11 +1,9 @@
-import firestore from '@react-native-firebase/firestore';
-import { Home } from "./src/screens/Home";
+import { Text } from "react-native";
 
-export default function App(){
+import { Routes } from "./src/routes";
 
+export default function App() {
   return (
-    <>
-      <Home />
-    </>
+    <Routes />
   );
 }
