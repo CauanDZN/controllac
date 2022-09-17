@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 
 
-export function ScreenA(){
+export function Home() {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const [text, setText] = useState('Aguardando escaneamento.')
@@ -19,7 +19,7 @@ export function ScreenA(){
         askForCameraPermission();
     }, [])
 
-    const handleBarCodeScanned = ({type, data}) => {
+    const handleBarCodeScanned = ({ type, data }) => {
         setScanned(true);
         setText(data);
         console.log('Type: ' + type + '\nData: ' + data);
@@ -27,32 +27,32 @@ export function ScreenA(){
 
     if (hasPermission === null) {
         return (
-        <View style={styles.container}>
-            <Text>Aguardando câmera...</Text>
-        </View>)
+            <View style={styles.container}>
+                <Text>Aguardando câmera...</Text>
+            </View>)
     }
     if (hasPermission === false) {
         return (
-        <View style={styles.container}>
-            <Text style={{ margin: 10 }}>Sem acesso a câmera.</Text>
-            <Button title={'Allow Camera'} onPress={() => askForCameraPermission()} />
-        </View>)
+            <View style={styles.container}>
+                <Text style={{ margin: 10 }}>Sem acesso a câmera.</Text>
+                <Button title={'Allow Camera'} onPress={() => askForCameraPermission()} />
+            </View>)
     }
 
     // Return the View
     return (
         <View style={styles.container}>
-        <View style={styles.barcodebox}>
-            <BarCodeScanner
-            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-            style={{ height: 400, width: 400 }} />
-        </View>
-        <Text style={styles.maintext}>{text}</Text>
+            <View style={styles.barcodebox}>
+                <BarCodeScanner
+                    onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                    style={{ height: 400, width: 400 }} />
+            </View>
+            <Text style={styles.maintext}>{text}</Text>
 
-        {scanned && <Button title={'Escanear de novo'} onPress={() => setScanned(false)} color='tomato' />}
+            {scanned && <Button title={'Escanear de novo'} onPress={() => setScanned(false)} color='tomato' />}
         </View>
     );
-    }
+}
 
 const styles = StyleSheet.create({
     container: {

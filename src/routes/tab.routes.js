@@ -3,20 +3,20 @@ import { MaterialIcons } from '@expo/vector-icons'
 
 const { Screen, Navigator } = createBottomTabNavigator();
 
-import { ScreenA } from '../screens/ScreenA';
+import { Home } from '../screens/Home';
 import { ScreenB } from '../screens/ScreenB';
 
-export function TabRoutes(){
+export function TabRoutes() {
     return (
         <Navigator>
-            <Screen 
-                name="ScreenA"
-                component={ScreenA}
+            <Screen
+                name="Home"
+                component={Home}
                 options={{
                     headerShown: false,
                     tabBarLabel: "Tela Principal",
-                    tabBarIcon: ({color, size}) => (
-                        <MaterialIcons 
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialIcons
                             name="home"
                             color={color}
                             size={size}
@@ -25,14 +25,14 @@ export function TabRoutes(){
                 }}
             />
 
-            <Screen 
+            <Screen
                 name="ScreenB"
                 component={ScreenB}
                 options={{
                     headerShown: false,
                     tabBarLabel: "Adicionar",
-                    tabBarIcon: ({color, size}) => (
-                        <MaterialIcons 
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialIcons
                             name="add"
                             color={color}
                             size={size}
