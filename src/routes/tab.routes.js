@@ -1,10 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialIcons } from '@expo/vector-icons'
+import { MaterialIcons, AntDesign } from '@expo/vector-icons'
 
 const { Screen, Navigator } = createBottomTabNavigator();
 
 import { Home } from '../screens/Home';
-import { ScreenB } from '../screens/ScreenB';
+import { About } from '../screens/About';
+import { Scanner } from '../screens/Scanner';
+import { Register } from '../screens/Register';
 
 export function TabRoutes() {
     return (
@@ -14,7 +16,7 @@ export function TabRoutes() {
                 component={Home}
                 options={{
                     headerShown: false,
-                    tabBarLabel: "Tela Principal",
+                    tabBarLabel: "Home",
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons
                             name="home"
@@ -26,11 +28,43 @@ export function TabRoutes() {
             />
 
             <Screen
-                name="ScreenB"
-                component={ScreenB}
+                name="Scanner"
+                component={Scanner}
                 options={{
                     headerShown: false,
-                    tabBarLabel: "Adicionar",
+                    tabBarLabel: "Escanear",
+                    tabBarIcon: ({ color, size }) => (
+                        <AntDesign
+                            name="scan1"
+                            color={color}
+                            size={size}
+                        />
+                    )
+                }}
+            />
+
+            <Screen
+                name="About"
+                component={About}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: "Sobre",
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialIcons
+                            name="info"
+                            color={color}
+                            size={size}
+                        />
+                    )
+                }}
+            />
+
+            <Screen
+                name="Register"
+                component={Register}
+                options={{
+                    headerShown: false,
+                    tabBarLabel: "Cadastrar",
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons
                             name="add"

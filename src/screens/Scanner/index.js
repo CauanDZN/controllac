@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Button } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
+import { useNavigation } from '@react-navigation/native';
 
-
-export function Home() {
+export function Scanner() {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const [text, setText] = useState('Aguardando escaneamento.')
+
+    const navigation = useNavigation();
 
     const askForCameraPermission = () => {
         (async () => {
@@ -22,10 +24,9 @@ export function Home() {
     const handleBarCodeScanned = ({ type, data }) => {
         setScanned(true);
         setText(data);
-        console.log('Type: ' + type + '\nData: ' + data);
     }
 
-    if (hasPermission === null) {
+    if (!hasPermission === null) {
         return (
             <View style={styles.container}>
                 <Text>Aguardando câmera...</Text>
@@ -49,7 +50,13 @@ export function Home() {
             </View>
             <Text style={styles.maintext}>{text}</Text>
 
-            {scanned && <Button title={'Escanear de novo'} onPress={() => setScanned(false)} color='tomato' />}
+            {scanned && (
+                <>
+                    <Button title={'Escanear de novo'} onPress={() => setScanned(false)} color='tomato' />
+                    <Button title={'Cadastrar'} onPress={() => navigation.navigate("Register")} color='tomato' />
+                    <Button title={'Verificar validade'} color='tomato' />
+                </>
+            )}
         </View>
     );
 }
@@ -69,9 +76,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: 300,
-        width: 300,
+        width: 500,
         overflow: 'hidden',
         borderRadius: 30,
-        backgroundColor: 'tomato'
+        backgroundColor: 'transparent'
     }
 });
