@@ -1,18 +1,13 @@
 import React from 'react';
 import { View, Text, Button, FlatList, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 
 import { styles } from './styles';
 
-export function Home() {
-
-    const navigation = useNavigation();
+export function Home({ navigation }) {
 
     function handleNewLot() {
-        firestore().collection('lots').doc('00003').set({
-            "patrimony": "teste"
-        }).then(() => Alert.alert("Chamado", "Chamado aberto com sucesso"))
+        navigation.navigate("Register")
     }
 
     return (
