@@ -52,9 +52,22 @@ export function Scanner() {
 
             {scanned && (
                 <>
-                    <Button title={'Escanear de novo'} onPress={() => setScanned(false)} color='tomato' />
-                    <Button title={'Cadastrar'} onPress={() => navigation.navigate("Register")} color='tomato' />
-                    <Button title={'Verificar validade'} color='tomato' />
+                    <Button
+                        title={'Escanear de novo'}
+                        onPress={() => setScanned(false)}
+                        color='tomato'
+                    />
+
+                    <Button
+                        title={'Cadastrar'}
+                        onPress={() => navigation.navigate("Register")}
+                        color='tomato'
+                    />
+
+                    <Button
+                        title={'Verificar validade'}
+                        color='tomato'
+                    />
                 </>
             )}
         </View>

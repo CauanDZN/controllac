@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import { Home } from './src/screens/Home'
 import { Scanner } from './src/screens/Scanner'
+import { Register } from './src/screens/Register'
 
 const Stack = createNativeStackNavigator()
 
@@ -20,6 +21,7 @@ export default function App() {
       <Stack.Navigator>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Scanner" component={Scanner} />
+        <Stack.Screen name="Register" component={Register} />
       </Stack.Navigator>
     </NavigationContainer>
   );
