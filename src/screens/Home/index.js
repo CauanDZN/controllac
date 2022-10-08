@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, AspectRatio, Image, Stack, HStack, VStack, Text, Heading } from 'native-base';
+import { Box, AspectRatio, Image, Stack, HStack, Text, VStack, Heading, Button, Center } from 'native-base';
+import { FlatList } from 'react-native'
 
 import firestore from '@react-native-firebase/firestore';
 
@@ -14,75 +15,66 @@ export function Home({ navigation }) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <VStack>
+            <VStack
+                marginTop="8"
+                width="100%"
+                height="50"
+                backgroundColor="#320059"
+                justifyContent="center"
+                alignItems="center"
+                flexDirection="row"
+            >
                 <Text style={styles.text}>Controllac</Text>
-            </View>
+            </VStack>
 
-            <View>
+            <VStack>
                 <Button
-                    title="ESCANEAR"
                     onPress={() => navigation.navigate('Scanner')}
                 />
-            </View>
+            </VStack>
 
-            <View>
-                <Text>
+            <VStack>
+                <Text fontSize="3xl" fontWeight="bold" mt="4" ml="4">
                     Olá, Talita.
                 </Text>
 
-                <Text>
+                <Text ml="4" fontSize="2xl">
                     Lotes cadastrados:
                 </Text>
 
                 <Box
+                    ml="4"
+                    mt="4"
                     shadow="2"
                     rounded="lg"
                     w={{ base: "64", md: "80", lg: "md" }}
                     _light={{ bg: "coolGray.50" }}
                     _dark={{ bg: "gray.700" }}
                 >
-                    <AspectRatio w="100%" ratio={ratio}>
-                        <Image source={Img} alt="image base" />
+                    <AspectRatio w="4" h="32">
+                        <Image source={Img} w="32" h="32" alt="image base" />
                     </AspectRatio>
-
                     <Stack space="2" p="4">
-                        <Text color="gray.400">October 1, 2022</Text>
-                        <Heading size={["md", "lg", "md"]} fontWeight="medium">
+                        <Heading fontWeight="medium">
                             Lote de Café Pilão
                         </Heading>
                         <Text>
-                            Data de validade: 10/10/2022;
-                            Data de fabricação: 10/10/2018;
+                            Data de Validade: 00/00/0000
                         </Text>
-
-                        <HStack space="3" px="4" pb="4">
-                            <MoreIcon _light={{ color: "emerald.800" }} _dark={{ color: "emerald.300" }} />
-                            <Box
-                                px="3"
-                                py="2"
-                                mb={["4", "5"]}
-                                bg="primary.400"
-                                rounded="lg"
-                            >
-                                <Text fontWeight="medium" color="white" fontSize="sm">
-                                    CONFERIR VALIDADE
-                                </Text>
-                            </Box>
-                        </HStack>
+                        <Text>
+                            Data de Fabricação: 00/00/0000
+                        </Text>
                     </Stack>
+                    <HStack space="3" px="4" pb="4">
+                        <Text _light={{ color: "emerald.800" }} _dark={{ color: "emerald.300" }}>
+                            Verificar validade
+                        </Text>
+                    </HStack>
                 </Box>
 
-                <FlatList
-                    horizontal={true}
-                />
 
-                <Button title='Criar' onPress={handleNewLot} />
-
-                <Text>
-                    Lotes perto do prazo de validade:
-                </Text>
-            </View>
-        </View>
+            </VStack>
+        </VStack>
     );
 }

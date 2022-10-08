@@ -46,7 +46,7 @@ export function Scanner() {
             <View style={styles.barcodebox}>
                 <BarCodeScanner
                     onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                    style={{ height: 400, width: 400 }} />
+                    style={{ height: 500, width: 500 }} />
             </View>
             <Text style={styles.maintext}>{text}</Text>
 
