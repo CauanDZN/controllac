@@ -1,15 +1,4 @@
 {
-  "expo": {
-    "name": "Controllac",
-    "slug": "Controllac",
-    "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "3e0546b4-fbb6-49ec-a955-9c8ffed79775"
-      }
-    }
-  }
+  "name": "controllac",
+  "displayName": "controllac"
 }
