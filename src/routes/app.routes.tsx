@@ -4,6 +4,12 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { useTheme } from 'styled-components';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_700Bold
+} from '@expo-google-fonts/poppins'
+
 import { Dashboard } from '../screens/Dashboard';
 import { Scanner } from '../screens/Scanner';
 import { Register } from '../screens/Register';
@@ -17,6 +23,7 @@ export function AppRoutes() {
   return (
     <Navigator
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: theme.colors.secondary,
         tabBarInactiveTintColor: theme.colors.text,
         tabBarStyle: {

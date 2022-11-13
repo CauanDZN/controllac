@@ -38,18 +38,12 @@ export function Dashboard() {
   const { user, signOut } = useAuth();
 
   async function loadTransactions() {
-    const dataKey = `@controllac:transactions`;
+    const dataKey = '@controllac:transactions';
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
     const transactionsFormatted: DataListProps[] = transactions.map(
       ({ barcode, date, id, name, category, expiration, fabrication }: DataListProps) => {
-
-        const dateFormatted = Intl.DateTimeFormat("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(new Date(date));
 
         return {
           id,
@@ -57,7 +51,6 @@ export function Dashboard() {
           barcode,
           expiration,
           fabrication,
-          date: dateFormatted,
           category,
         };
       }
@@ -68,7 +61,7 @@ export function Dashboard() {
   }
 
   function deleteTransactions() {
-    const dataKey = `@gofinances:transactions_user:${user.id}`;
+    const dataKey = '@controllac:transactions';
     AsyncStorage.removeItem(dataKey);
   }
 
@@ -97,12 +90,12 @@ export function Dashboard() {
                 <UserInfo>
                   <Photo
                     source={{
-                      uri: user.photo,
+                      uri: "https://github.com/CauanDZN.png",
                     }}
                   />
                   <User>
                     <UserGreeting>Olá,</UserGreeting>
-                    <UserName>{user.name}</UserName>
+                    <UserName>Cauan</UserName>
                   </User>
                 </UserInfo>
 

@@ -1,7 +1,12 @@
 import React from 'react';
+
+import {
+  Button
+} from 'react-native'
+
 import { FlatList } from 'react-native-gesture-handler';
 
-import { Button } from '../../components/Form/Button';
+// import { Button } from '../../components/Form/Button';
 
 import { categories } from '../../utils/categories';
 
@@ -52,7 +57,6 @@ export function CategorySelect({
             onPress={() => handleCategorySelect(item)}
             isActive={category.key === item.key}
           >
-            <Icon name={item.icon} />
             <Name>{item.name}</Name>
           </Category>
         )}

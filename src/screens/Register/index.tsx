@@ -4,7 +4,8 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert
+  Alert,
+  Button
 } from 'react-native';
 
 import * as Yup from 'yup';
@@ -16,7 +17,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native';
 
 import { InputForm } from '../../components/Form/InputForm';
-import { Button } from '../../components/Form/Button';
+// import { Button } from '../../components/Form/Button';
 import { CategorySelectButton } from '../../components/Form/CategorySelectButton';
 import { useAuth } from '../../hooks/auth';
 import { CategorySelect } from '../CategorySelect';
@@ -89,7 +90,7 @@ export function Register() {
   async function handleRegister(form: FormData) {
 
     if (category.key === 'category')
-      return Alert.alert('Selecione a categoria');
+      return Alert.alert('Selecione a categoria!');
 
 
     const newTransaction = {
@@ -103,7 +104,7 @@ export function Register() {
     }
 
     try {
-      const dataKey = `@gofinances:transactions_user:${user.id}`;
+      const dataKey = `@controllac:transactions`;
 
       const data = await AsyncStorage.getItem(dataKey);
       const currentData = data ? JSON.parse(data) : [];
@@ -156,17 +157,17 @@ export function Register() {
             />
 
             <InputForm
-              name="expiration"
-              control={control}
-              placeholder="Data de Validade"
-              error={errors.expiration && errors.expiration.message}
-            />
-
-            <InputForm
               name="fabrication"
               control={control}
               placeholder="Data de Fabricação"
               error={errors.fabrication && errors.fabrication.message}
+            />
+
+            <InputForm
+              name="expiration"
+              control={control}
+              placeholder="Data de Validade"
+              error={errors.expiration && errors.expiration.message}
             />
 
             <InputForm
@@ -176,7 +177,7 @@ export function Register() {
               error={errors.supplier && errors.supplier.message}
             />
 
-            <CategorySelectButton
+            <Button
               title={category.name}
               onPress={handleOpenSelectCategoryModal}
             />
