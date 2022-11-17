@@ -48,7 +48,7 @@ export function Dashboard() {
     const transactions = response ? JSON.parse(response) : [];
 
     const transactionsFormatted: DataListProps[] = transactions.map(
-      ({ barcode, date, id, name, category, expiration, fabrication }: DataListProps) => {
+      ({ barcode, date, id, name, category, expiration, fabrication, amount }: DataListProps) => {
 
         return {
           id,
@@ -57,6 +57,7 @@ export function Dashboard() {
           expiration,
           fabrication,
           category,
+          amount
         };
       }
     );

@@ -37,6 +37,7 @@ interface FormData {
   expiration: string;
   fabrication: string;
   supplier: string;
+  amount: string;
 }
 
 const schema = Yup.object().shape({
@@ -52,6 +53,9 @@ const schema = Yup.object().shape({
   supplier: Yup
     .string()
     .required('O CNPJ do Fornecedor é obrigatório'),
+  amount: Yup
+    .number()
+    .required('A quantidade de lotes é obrigatória'),
   barcode: Yup
     .string()
     .typeError('Informe o código de barras')
@@ -100,6 +104,7 @@ export function Register() {
       expiration: form.expiration,
       fabrication: form.fabrication,
       supplier: form.supplier,
+      amount: form.amount,
       category: category.key,
     }
 
@@ -168,6 +173,14 @@ export function Register() {
               control={control}
               placeholder="Data de Validade"
               error={errors.expiration && errors.expiration.message}
+            />
+
+            <InputForm
+              name="amount"
+              control={control}
+              placeholder="Quantidade"
+              keyboardType="numeric"
+              error={errors.amount && errors.amount.message}
             />
 
             <InputForm

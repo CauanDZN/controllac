@@ -42,7 +42,7 @@ export const Icon = styled(MaterialCommunityIcons)`
 `;
 
 export const CategoryName = styled.Text`
-  color: ${({ theme }) => theme.colors.shape};
+  color: ${({ theme }) => theme.colors.text_dark};
   font-size: ${RFValue(16)}px;
 `;
 

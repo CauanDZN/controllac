@@ -19,6 +19,7 @@ export interface TransactionCardProps {
   barcode: string;
   expiration: string;
   fabrication: string;
+  amount: string;
   category: string;
   date: string;
 }
@@ -46,6 +47,16 @@ export function TransactionCard({ data }: Props) {
         <CategoryName>
           {category.name}
         </CategoryName>
+      </Footer>
+
+      <Footer>
+        <ValidationText>
+          Quantidades:
+        </ValidationText>
+
+        <Date>
+          {data.amount}
+        </Date>
       </Footer>
 
       <Footer>

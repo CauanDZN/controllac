@@ -40,7 +40,7 @@ export const Category = styled.TouchableOpacity<CategoryProps>`
   align-items: center;
 
   background-color: ${({ isActive }) =>
-    isActive ? theme.colors.shape : theme.colors.background
+    isActive ? theme.colors.text : theme.colors.background
   };
 `;
 
@@ -52,7 +52,7 @@ export const Icon = styled(MaterialCommunityIcons)`
 export const Name = styled.Text`
   font-family: ${({ theme }) => theme.fonts.regular};
   font-size: ${RFValue(14)}px;
-  color: ${({ theme }) => theme.colors.shape};
+  color: ${({ theme }) => theme.colors.text_dark};
 `;
 
 export const Separator = styled.View`
