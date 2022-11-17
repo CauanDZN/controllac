@@ -54,14 +54,14 @@ export const UserGreeting = styled.Text`
   color: ${({ theme }) => theme.colors.shape};
 
   font-size: ${RFValue(18)}px;
-  font-family: ${({ theme }) => theme.fonts.regular};
+  font-family: "Inter-Medium";
 `;
 
 export const UserName = styled.Text`
   color: ${({ theme }) => theme.colors.shape};
 
   font-size: ${RFValue(18)}px;
-  font-family: ${({ theme }) => theme.fonts.bold};
+  font-family: "Inter-Bold";
 `;
 
 export const LogoutButton = styled.TouchableOpacity``;
@@ -80,7 +80,7 @@ export const Transactions = styled.View`
 
 export const Title = styled.Text`
   font-size: ${RFValue(18)}px;
-  font-family: ${({ theme }) => theme.fonts.regular};
+  font-family: "Inter-Regular";
 
   margin-bottom: 16px;
 `;

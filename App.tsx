@@ -4,11 +4,7 @@ import 'react-native-gesture-handler';
 import 'intl';
 import 'intl/locale-data/jsonp/pt-BR';
 
-import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_700Bold
-} from '@expo-google-fonts/poppins'
+import { useFonts } from 'expo-font';
 
 import { ThemeProvider } from 'styled-components';
 import theme from './src/global/styles/theme';

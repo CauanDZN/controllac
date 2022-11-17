@@ -3,6 +3,11 @@ import { StyleSheet, Text, View, Alert, Button } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { BarCodeScanner } from "expo-barcode-scanner";
 
+import {
+    Header,
+    Title
+} from "./styles"
+
 export function Scanner() {
     const [hasPermission, setHasPermission] = useState(null);
     const navigation = useNavigation();
@@ -20,8 +25,15 @@ export function Scanner() {
 
     return (
         <View style={styles.container}>
-            <Text>Clique no botão para escanear!</Text>
-            <Button title="Escanear" onPress={() => navigation.navigate("ScannerFunction")}></Button>
+            <Header>
+                <Title>Scanner</Title>
+            </Header>
+
+            <View style={styles.button}>
+                <Text>Clique no botão para escanear!</Text>
+                <Button title="Escanear" onPress={() => navigation.navigate("ScannerFunction")}></Button>
+            </View>
+            
         </View>
     );
 }
@@ -30,8 +42,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
+        padding: 0
+    },
+    button: {
+        padding: 30
     },
     maintext: {
         fontSize: 16,
