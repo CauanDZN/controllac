@@ -1,9 +1,11 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View} from 'react-native';
 import {StyleSheet} from 'react-native';
-import auth from '@react-native-firebase/auth';
+import auth, { firebase } from '@react-native-firebase/auth';
 
 import logo from '../../assets/logo.svg';
+
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import {MyButton} from '../../components/MyButton';
 import {MyTextInput} from '../../components/MyTextInput';
@@ -43,10 +45,15 @@ export function SignInScreen() {
       });
   }
 
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '437059309354-1q7vja959c1b1bl1cmbrtik7jmghq6ve.apps.googleusercontent.com', 
+    });
+  }, [])
+
   return (
     <View style={[styles.container, {justifyContent: 'center'}]}>
       
-
       <MyTextInput 
         placeholder="E-mail" 
         value={email} 
@@ -62,7 +69,26 @@ export function SignInScreen() {
 
       <MyButton onPress={signIn} title="Entrar no App" />
 
-      <MyLink title="Cadastrar" onPress={signUp} />
+      <MyButton onPress={() =>  {    
+        GoogleSignin.configure({        
+          webClientId: '437059309354-1q7vja959c1b1bl1cmbrtik7jmghq6ve.apps.googleusercontent.com',   
+        });
+        
+        GoogleSignin.hasPlayServices().then((hasPlayService) => {
+        if (hasPlayService) {
+             GoogleSignin.signIn().then((userInfo) => {
+                console.log(JSON.stringify(userInfo))             
+              })
+              .catch((e) => {            
+                console.log("ERROR IS: " + JSON.stringify(e));             
+                })        
+              }}).catch((e) => {    
+                console.log("ERROR IS: " + JSON.stringify(e));})}
+                } title="Entrar com Google" />
+
+      <MyLink title="Cadastrar e Entrar" onPress={signUp} />
+
+      
     </View>
   );
 }

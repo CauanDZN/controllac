@@ -15,12 +15,27 @@ import theme from './src/global/styles/theme';
 import { StatusBar } from 'react-native';
 import {ActivityIndicator, SafeAreaView, View} from 'react-native';
 
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {SignInScreen} from './src/screens/SignIn';
 import { Routes } from './src/routes';
+import { MyButton } from './src/components/MyButton';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  photo?: string;
+}
 
 const App = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [userStorageLoading, setUserStorageLoading] = useState(true);
+
+  const userStorageKey = '@controllac:user';
 
   const firebaseConfig = {
     apiKey: "AIzaSyBOFqudYn9qbvSmz66RufixoSMcQXQveHg",
@@ -48,6 +63,7 @@ const App = () => {
     return unsubscribe;
   }, [initializing]);
 
+
   if (initializing) {
     return (
       <View>
@@ -56,6 +72,7 @@ const App = () => {
     );
   }
 
+
   return (
     <ThemeProvider theme={theme}>
       <StatusBar barStyle="light-content" backgroundColor="#320059"></StatusBar>
@@ -63,7 +80,10 @@ const App = () => {
         user ? 
           <Routes /> 
         : 
-          <SignInScreen />
+          <>
+            <SignInScreen />
+          </>
+          
       } 
     </ThemeProvider>
   );

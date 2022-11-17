@@ -24,7 +24,6 @@ interface User {
 interface IAuthContextData {
   user: User;
   signInWithGoogle(): Promise<void>;
-  signInWithApple(): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -41,13 +40,13 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
   const [userStorageLoading, setUserStorageLoading] = useState(true);
 
-  const userStorageKey = '@gofinances:user';
+  const userStorageKey = '@controllac:user';
 
 
   async function signInWithGoogle() {
     try {
-      const CLIENT_ID = '230816679466-a1h8gi8ts0ctnjpfnb98tails91imkn7.apps.googleusercontent.com';
-      const REDIRECT_URI = 'https://auth.expo.io/@cauandzn/gofinances';
+      const CLIENT_ID = '326783233616-js5q38hcadg124mjlelt2ntoplhhvoto.apps.googleusercontent.com ';
+      const REDIRECT_URI = 'https://auth.expo.io/@cauandzn/controllac';
 
       const RESPONSE_TYPE = 'token';
       const SCOPE = encodeURI('profile email');
@@ -76,32 +75,6 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  async function signInWithApple() {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-      if (credential) {
-        const name = credential.fullName!.givenName!;
-        const photo = `https://ui-avatars.com/api/?name=${name}?length=1`;
-
-        const userLogged = {
-          id: String(credential.user),
-          email: credential.email!,
-          name,
-          photo,
-        };
-        setUser(userLogged);
-        await AsyncStorage.setItem(userStorageKey, JSON.stringify(userLogged));
-      }
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
   async function signOut() {
     setUser({} as User);
     await AsyncStorage.removeItem(userStorageKey);
@@ -109,7 +82,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     async function loadUserStorageDate() {
-      const userStoraged = await AsyncStorage.getItem('@gofinances:user');
+      const userStoraged = await AsyncStorage.getItem('@controllac:user');
 
       if (userStoraged) {
         const userLogged = JSON.parse(userStoraged) as User;
@@ -127,7 +100,6 @@ function AuthProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider value={{
       user,
       signInWithGoogle,
-      signInWithApple,
       signOut,
     }}>
       {children}
