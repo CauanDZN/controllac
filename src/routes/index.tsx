@@ -10,22 +10,21 @@ import {
   Poppins_500Medium,
   Poppins_700Bold
 } from '@expo-google-fonts/poppins'
+import { SignInScreen } from '../screens/SignIn';
 
 export function Routes() {
-  const { user } = useAuth();
-
   const Stack = createNativeStackNavigator();
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Controllac" component={AppRoutes} options={{
-          headerShown: false
-        }}/>
-        <Stack.Screen name="ScannerFunction" component={ScannerFunction} options={{
-          headerTitle: "Scanner"
-        }} />
-      </Stack.Navigator>
+        <Stack.Navigator>
+          <Stack.Screen name="Controllac" component={AppRoutes} options={{
+            headerShown: false
+          }}/>
+          <Stack.Screen name="ScannerFunction" component={ScannerFunction} options={{
+            headerTitle: "Scanner"
+          }} />
+        </Stack.Navigator>
     </NavigationContainer>
   );
 }

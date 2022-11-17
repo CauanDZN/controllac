@@ -126,6 +126,7 @@ export function Resume(): JSX.Element {
               y="total"
             />
           </ChartContainer>
+          
           {totalByCategories.map(({ name, key }) => (
             <HistoryCard
               key={key}

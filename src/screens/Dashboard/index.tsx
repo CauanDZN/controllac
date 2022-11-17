@@ -4,7 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from 'styled-components';
-import { useAuth } from "../../hooks/auth";
+import auth from '@react-native-firebase/auth';
+
+import {MyButton} from '../../components/MyButton';
 
 import { TransactionCard, TransactionCardProps } from '../../components/TransactionCard';
 
@@ -35,7 +37,10 @@ export function Dashboard() {
   const [transactions, setTransactions] = useState<DataListProps[]>([]);
 
   const theme = useTheme();
-  const { user, signOut } = useAuth();
+
+  function signOut() {
+    auth().signOut();
+  }
 
   async function loadTransactions() {
     const dataKey = '@controllac:transactions';
@@ -99,9 +104,7 @@ export function Dashboard() {
                   </User>
                 </UserInfo>
 
-                <LogoutButton onPress={signOut}>
-                  {/* <Icon name="power" /> */}
-                </LogoutButton>
+                <MyButton onPress={signOut} title="Sair" />
               </UserWrapper>
 
             </Header>
