@@ -15,7 +15,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {SignInScreen} from './src/screens/SignIn';
+import {SignIn} from './src/screens/SignIn';
 import { Routes } from './src/routes';
 import { MyButton } from './src/components/MyButton';
 
@@ -29,9 +29,8 @@ interface User {
 const App = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
-  const [userStorageLoading, setUserStorageLoading] = useState(true);
-
-  const userStorageKey = '@controllac:user';
+  
+  const userStorage = AsyncStorage.getItem("token");
 
   const firebaseConfig = {
     apiKey: "AIzaSyBOFqudYn9qbvSmz66RufixoSMcQXQveHg",
@@ -73,11 +72,11 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <StatusBar barStyle="light-content" backgroundColor="#320059"></StatusBar>
       {
-        user ? 
+        user && userStorage ? 
           <Routes /> 
         : 
           <>
-            <SignInScreen />
+            <SignIn />
           </>
           
       } 

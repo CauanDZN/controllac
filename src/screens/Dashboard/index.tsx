@@ -8,6 +8,8 @@ import auth from '@react-native-firebase/auth';
 
 import {MyButton} from '../../components/MyButton';
 
+import userPhoto from '../../assets/userPhotoDefault.png';
+
 import { TransactionCard, TransactionCardProps } from '../../components/TransactionCard';
 
 import {
@@ -94,14 +96,10 @@ export function Dashboard() {
             <Header>
               <UserWrapper>
                 <UserInfo>
-                  <Photo
-                    source={{
-                      uri: "https://github.com/CauanDZN.png",
-                    }}
-                  />
+                  <Photo source={userPhoto} />
                   <User>
                     <UserGreeting>Olá,</UserGreeting>
-                    <UserName>Cauan</UserName>
+                    <UserName>Usuário</UserName>
                   </User>
                 </UserInfo>
 

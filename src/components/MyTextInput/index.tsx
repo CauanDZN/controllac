@@ -5,7 +5,7 @@ export function MyTextInput(props: TextInputProps) {
   return (
     <TextInput
       autoCapitalize="none"
-      placeholderTextColor="#727272"
+      placeholderTextColor="#ffffff"
       style={styles.input}
       {...props}
     />
@@ -15,9 +15,9 @@ export function MyTextInput(props: TextInputProps) {
 const styles = StyleSheet.create({
   input: {
     borderRadius: 8,
-    borderColor: '#1D013F',
+    borderColor: '#ffc400',
     paddingHorizontal: 8,
-    color: '#000',
+    color: '#ffffff',
     borderWidth: 1,
     width: '100%',
     height: 50,

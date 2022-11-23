@@ -5,7 +5,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
-  Button
+  Button,
+  SafeAreaView
 } from 'react-native';
 
 import * as Yup from 'yup';
@@ -136,7 +137,7 @@ export function Register() {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Container>
 
         <Header>

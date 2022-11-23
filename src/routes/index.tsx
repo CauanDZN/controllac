@@ -10,7 +10,7 @@ import {
   Poppins_500Medium,
   Poppins_700Bold
 } from '@expo-google-fonts/poppins'
-import { SignInScreen } from '../screens/SignIn';
+import { SignIn } from '../screens/SignIn';
 
 export function Routes() {
   const Stack = createNativeStackNavigator();
