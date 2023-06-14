@@ -1,36 +1,24 @@
-import React, { useState } from 'react';
-
+import React, {useState} from 'react';
 import {
   Modal,
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
   Button,
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
-
 import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import {yupResolver} from '@hookform/resolvers/yup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import uuid from 'react-native-uuid';
+import {uuid} from 'uuid-random';
+import {useForm} from 'react-hook-form';
+import {format} from 'date-fns';
 
-import { useForm } from 'react-hook-form';
-import { useNavigation } from '@react-navigation/native';
-
-import { InputForm } from '../../components/Form/InputForm';
-// import { Button } from '../../components/Form/Button';
-import { CategorySelectButton } from '../../components/Form/CategorySelectButton';
-import { useAuth } from '../../hooks/auth';
-import { CategorySelect } from '../CategorySelect';
-
-import {
-  Container,
-  Header,
-  Title,
-  Form,
-  Fields,
-  Date
-} from './styles';
+import {InputForm} from '../../components/Form/InputForm';
+import {CategorySelectButton} from '../../components/Form/CategorySelectButton';
+import {useAuth} from '../../hooks/auth';
+import {CategorySelect} from '../CategorySelect';
+import {Container, Header, Title, Form, Fields, Date} from './styles';
 
 interface FormData {
   name: string;
@@ -42,46 +30,32 @@ interface FormData {
 }
 
 const schema = Yup.object().shape({
-  name: Yup
-    .string()
-    .required('O nome é obrigatório'),
-  expiration: Yup
-    .string()
-    .required('A data de validade é obrigatória'),
-  fabrication: Yup
-    .string()
-    .required('A data de fabricação é obrigatória'),
-  supplier: Yup
-    .string()
-    .required('O CNPJ do Fornecedor é obrigatório'),
-  amount: Yup
-    .number()
-    .required('A quantidade de lotes é obrigatória'),
-  barcode: Yup
-    .string()
+  name: Yup.string().required('O nome é obrigatório'),
+  expiration: Yup.string().required('A data de validade é obrigatória'),
+  fabrication: Yup.string().required('A data de fabricação é obrigatória'),
+  supplier: Yup.string().required('O CNPJ do Fornecedor é obrigatório'),
+  amount: Yup.number().required('A quantidade de lotes é obrigatória'),
+  barcode: Yup.string()
     .typeError('Informe o código de barras')
     .required('O código de barras é obrigatório'),
 });
 
-export function Register() {
+export function Register({navigation}) {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [modalVisible, setModalVisisble] = useState(false);
 
   const [category, setCategory] = useState({
     key: 'category',
-    name: 'Categoria'
+    name: 'Categoria',
   });
-
-  const navigation = useNavigation();
-  const { user } = useAuth();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(schema)
+    formState: {errors},
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
   });
 
   function handleOpenSelectCategoryModal() {
@@ -93,13 +67,11 @@ export function Register() {
   }
 
   async function handleRegister(form: FormData) {
-
-    if (category.key === 'category')
+    if (category.key === 'category') {
       return Alert.alert('Selecione a categoria!');
-
+    }
 
     const newTransaction = {
-      id: String(uuid.v4()),
       name: form.name,
       barcode: form.barcode,
       expiration: form.expiration,
@@ -107,39 +79,33 @@ export function Register() {
       supplier: form.supplier,
       amount: form.amount,
       category: category.key,
-    }
+    };
 
     try {
-      const dataKey = `@controllac:transactions`;
-
+      const dataKey = '@controllac:transactions';
       const data = await AsyncStorage.getItem(dataKey);
       const currentData = data ? JSON.parse(data) : [];
 
-      const dataFormatted = [
-        ...currentData,
-        newTransaction
-      ];
+      const dataFormatted = [...currentData, newTransaction];
 
       await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
 
       reset();
       setCategory({
         key: 'category',
-        name: 'Categoria'
+        name: 'Categoria',
       });
 
       navigation.navigate('Listagem');
-
     } catch (error) {
       console.log(error);
-      Alert.alert("Não foi possível salvar");
+      Alert.alert('Não foi possível salvar');
     }
   }
 
   return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Container>
-
         <Header>
           <Title>Cadastro</Title>
         </Header>
@@ -197,10 +163,7 @@ export function Register() {
             />
           </Fields>
 
-          <Button
-            title="Enviar"
-            onPress={handleSubmit(handleRegister)}
-          />
+          <Button title="Enviar" onPress={handleSubmit(handleRegister)} />
         </Form>
 
         <Modal visible={categoryModalOpen}>

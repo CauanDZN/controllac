@@ -1,10 +1,4 @@
 {
-  "expo": {
-    "name": "controllac",
-    "slug": "controllac",
-    "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ]
-  }
+  "name": "controllac",
+  "displayName": "controllac"
 }

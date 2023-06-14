@@ -1,86 +1,79 @@
 import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, View} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ThemeProvider} from 'styled-components';
+import {StatusBar} from 'react-native';
 import auth, {firebase, FirebaseAuthTypes} from '@react-native-firebase/auth';
-import 'react-native-gesture-handler';
+import {firebaseConfig} from './src/utils/firebaseconfig';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import 'intl';
 import 'intl/locale-data/jsonp/pt-BR';
 
-import { useFonts } from 'expo-font';
-
-import { ThemeProvider } from 'styled-components';
 import theme from './src/global/styles/theme';
-import { StatusBar } from 'react-native';
-import {ActivityIndicator, SafeAreaView, View} from 'react-native';
-
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {SignIn} from './src/screens/SignIn';
-import { Routes } from './src/routes';
-import { MyButton } from './src/components/MyButton';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  photo?: string;
-}
+import {Routes} from './src/routes';
 
 const App = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
-  
-  const userStorage = AsyncStorage.getItem("token");
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBOFqudYn9qbvSmz66RufixoSMcQXQveHg",
-    authDomain: "437059309354-1q7vja959c1b1bl1cmbrtik7jmghq6ve.apps.googleusercontent.com",
-    databaseURL: "",
-    projectId: "controllac",
-    storageBucket: "controllac.appspot.com",
-    messagingSenderId: "",
-    appId: "437059309354",
-    measurementId: ""
-  };
-
-  if(!firebase.apps.length){
-    firebase.initializeApp(firebaseConfig)
-  } 
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(_user => {
-      if (initializing) {
-        setInitializing(false);
+    const fetchUserStorage = async () => {
+      const storedUser = await AsyncStorage.getItem('token');
+      if (storedUser !== null) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(null);
       }
-      setUser(_user);
+      setInitializing(false);
+    };
+
+    fetchUserStorage();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged(async _user => {
+      if (_user) {
+        // Aqui você pode fazer a validação do token ou qualquer outra lógica de autenticação
+        const tokenValid = await validateToken(_user.token); // Substitua com a sua lógica de validação do token
+        if (tokenValid) {
+          setUser(_user);
+        } else {
+          setUser(null);
+          await AsyncStorage.removeItem('token');
+        }
+      } else {
+        setUser(null);
+      }
     });
 
     return unsubscribe;
-  }, [initializing]);
+  }, []);
 
+  const validateToken = async (token: string) => {
+    // Implemente a lógica de validação do token aqui
+    // Retorne true se o token for válido e false caso contrário
+    return true;
+  };
 
   if (initializing) {
     return (
-      <View>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <ActivityIndicator color="#000" />
       </View>
     );
   }
 
-
   return (
-    <ThemeProvider theme={theme}>
-      <StatusBar barStyle="light-content" backgroundColor="#320059"></StatusBar>
-      {
-        user && userStorage ? 
-          <Routes /> 
-        : 
-          <>
-            <SignIn />
-          </>
-          
-      } 
-    </ThemeProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <ThemeProvider theme={theme}>
+        <StatusBar barStyle="light-content" backgroundColor="#320059" />
+        <Routes />
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 };
 

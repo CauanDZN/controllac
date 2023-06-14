@@ -1,16 +1,19 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from 'styled-components';
+import {useFocusEffect} from '@react-navigation/native';
+import {useTheme} from 'styled-components';
 import auth from '@react-native-firebase/auth';
 
 import {MyButton} from '../../components/MyButton';
 
 import userPhoto from '../../assets/userPhotoDefault.png';
 
-import { TransactionCard, TransactionCardProps } from '../../components/TransactionCard';
+import {
+  TransactionCard,
+  TransactionCardProps,
+} from '../../components/TransactionCard';
 
 import {
   Container,
@@ -26,9 +29,8 @@ import {
   Title,
   TransactionList,
   LogoutButton,
-  LoadContainer
-} from './styles'
-
+  LoadContainer,
+} from './styles';
 
 export interface DataListProps extends TransactionCardProps {
   id: string;
@@ -50,8 +52,16 @@ export function Dashboard() {
     const transactions = response ? JSON.parse(response) : [];
 
     const transactionsFormatted: DataListProps[] = transactions.map(
-      ({ barcode, date, id, name, category, expiration, fabrication, amount }: DataListProps) => {
-
+      ({
+        barcode,
+        date,
+        id,
+        name,
+        category,
+        expiration,
+        fabrication,
+        amount,
+      }: DataListProps) => {
         return {
           id,
           name,
@@ -59,9 +69,9 @@ export function Dashboard() {
           expiration,
           fabrication,
           category,
-          amount
+          amount,
         };
-      }
+      },
     );
     setTransactions(transactionsFormatted);
 
@@ -77,48 +87,47 @@ export function Dashboard() {
     loadTransactions();
   }, []);
 
-  useFocusEffect(useCallback(() => {
-    loadTransactions();
-  }, []));
-
+  useFocusEffect(
+    useCallback(() => {
+      loadTransactions();
+    }, []),
+  );
 
   return (
     <Container>
-      {
-        isLoading ?
-          <LoadContainer>
-            <ActivityIndicator
-              color={theme.colors.primary}
-              size="large"
+      {isLoading ? (
+        <LoadContainer>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+        </LoadContainer>
+      ) : (
+        <>
+          <Header>
+            <UserWrapper>
+              <UserInfo>
+                <Photo source={userPhoto} />
+                <User>
+                  <UserGreeting>Olá,</UserGreeting>
+                  <UserName>Usuário</UserName>
+                </User>
+              </UserInfo>
+
+              {/* <MyButton onPress={signOut} title="Sair" /> */}
+            </UserWrapper>
+          </Header>
+
+          <Transactions>
+            <Title>Listagem</Title>
+
+            <TransactionList
+              data={transactions}
+              keyExtractor={item => item.id}
+              renderItem={({item}) => (
+                <TransactionCard data={item} key={item.id} />
+              )}
             />
-          </LoadContainer> :
-          <>
-            <Header>
-              <UserWrapper>
-                <UserInfo>
-                  <Photo source={userPhoto} />
-                  <User>
-                    <UserGreeting>Olá,</UserGreeting>
-                    <UserName>Usuário</UserName>
-                  </User>
-                </UserInfo>
-
-                <MyButton onPress={signOut} title="Sair" />
-              </UserWrapper>
-
-            </Header>
-
-            <Transactions>
-              <Title>Listagem</Title>
-
-              <TransactionList
-                data={transactions}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => <TransactionCard data={item} />}
-              />
-            </Transactions>
-          </>
-      }
+          </Transactions>
+        </>
+      )}
     </Container>
-  )
+  );
 }

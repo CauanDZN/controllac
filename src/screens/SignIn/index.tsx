@@ -1,15 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {Text, View} from 'react-native';
 import {StyleSheet} from 'react-native';
-import auth, { firebase } from '@react-native-firebase/auth';
+import auth, {firebase} from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import logo from '../../assets/logo.png';
 
 import {MyButton} from '../../components/MyButton';
 import {MyTextInput} from '../../components/MyTextInput';
 import {MyLink} from '../../components/MyLink';
-import { Photo } from '../Dashboard/styles';
-import { useNavigation } from '@react-navigation/native';
+import {Photo} from '../Dashboard/styles';
 
 export function SignIn() {
   const [email, setEmail] = useState('');
@@ -18,8 +18,14 @@ export function SignIn() {
   function signInWithEmailAndPassword() {
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then(() => {
+      .then(async () => {
         console.log('Usuário autenticado!');
+        // Salvar o token no AsyncStorage
+        const user = auth().currentUser;
+        if (user && user.getIdToken) {
+          const token = await user.getIdToken();
+          await AsyncStorage.setItem('token', JSON.stringify(token)); // Converta o token para uma string JSON válida
+        }
       })
       .catch(error => {
         console.error(error);
@@ -41,7 +47,7 @@ export function SignIn() {
           console.log('O e-mail digitado é inválido!');
         }
 
-        if (password.length < 6){
+        if (password.length < 6) {
           console.log('Não pode ter menos que 6 caracteres!');
         }
 
@@ -51,17 +57,15 @@ export function SignIn() {
 
   return (
     <View style={[styles.container, {justifyContent: 'center'}]}>
-
-      <Photo source={logo} style={{
-        width: 200,
-        height: 200
-      }}/>
-      
-      <MyTextInput 
-        placeholder="E-mail" 
-        value={email} 
-        onChangeText={setEmail} 
+      <Photo
+        source={logo}
+        style={{
+          width: 200,
+          height: 200,
+        }}
       />
+
+      <MyTextInput placeholder="E-mail" value={email} onChangeText={setEmail} />
 
       <MyTextInput
         placeholder="Senha"
@@ -73,8 +77,6 @@ export function SignIn() {
       <MyButton onPress={signInWithEmailAndPassword} title="Entrar no App" />
 
       <MyLink title="Cadastrar e Entrar" onPress={signUp} />
-
-      
     </View>
   );
 }

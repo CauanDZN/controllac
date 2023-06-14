@@ -1,21 +1,21 @@
 import React from 'react';
-import { Platform } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'
-import { useTheme } from 'styled-components';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {Platform} from 'react-native';
+import {MaterialIcons} from '@expo/vector-icons';
+import {useTheme} from 'styled-components';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 import {
   Poppins_400Regular,
   Poppins_500Medium,
-  Poppins_700Bold
-} from '@expo-google-fonts/poppins'
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
 
-import { Dashboard } from '../screens/Dashboard';
-import { Scanner } from '../screens/Scanner';
-import { Register } from '../screens/Register';
-import { Resume } from '../screens/Resume';
+import {Dashboard} from '../screens/Dashboard';
+import {Scanner} from '../screens/Scanner';
+import {Register} from '../screens/Register';
+import {Resume} from '../screens/Resume';
 
-const { Navigator, Screen } = createBottomTabNavigator();
+const {Navigator, Screen} = createBottomTabNavigator();
 
 export function AppRoutes() {
   const theme = useTheme();
@@ -28,21 +28,20 @@ export function AppRoutes() {
         tabBarInactiveTintColor: theme.colors.text,
         tabBarStyle: {
           paddingVertical: Platform.OS === 'ios' ? 20 : 0,
-          height: 50
-        }
-      }}
-    >
+          height: 50,
+        },
+      }}>
       <Screen
         name="Listagem"
         component={Dashboard}
         options={{
-          tabBarIcon: (({ size, color }) => (
+          tabBarIcon: ({size, color}) => (
             <MaterialIcons
               name="format-list-bulleted"
               size={size}
               color={color}
             />
-          ))
+          ),
         }}
       />
 
@@ -50,13 +49,9 @@ export function AppRoutes() {
         name="Scanner"
         component={Scanner}
         options={{
-          tabBarIcon: (({ size, color }) => (
-            <MaterialIcons
-              name="qr-code-scanner"
-              size={size}
-              color={color}
-            />
-          ))
+          tabBarIcon: ({size, color}) => (
+            <MaterialIcons name="qr-code-scanner" size={size} color={color} />
+          ),
         }}
       />
 
@@ -64,13 +59,9 @@ export function AppRoutes() {
         name="Cadastrar"
         component={Register}
         options={{
-          tabBarIcon: (({ size, color }) => (
-            <MaterialIcons
-              name="add-circle"
-              size={size}
-              color={color}
-            />
-          ))
+          tabBarIcon: ({size, color}) => (
+            <MaterialIcons name="add-circle" size={size} color={color} />
+          ),
         }}
       />
 
@@ -78,13 +69,9 @@ export function AppRoutes() {
         name="Resumo"
         component={Resume}
         options={{
-          tabBarIcon: (({ size, color }) => (
-            <MaterialIcons
-              name="pie-chart"
-              size={size}
-              color={color}
-            />
-          ))
+          tabBarIcon: ({size, color}) => (
+            <MaterialIcons name="pie-chart" size={size} color={color} />
+          ),
         }}
       />
     </Navigator>

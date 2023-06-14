@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { categories } from '../../utils/categories';
+import {categories} from '../../utils/categories';
 
 import {
   Container,
@@ -28,56 +28,36 @@ interface Props {
   data: TransactionCardProps;
 }
 
-export function TransactionCard({ data }: Props) {
-  const [category] = categories.filter(
-    item => item.key === data.category
-  );
+export function TransactionCard({data}: Props) {
+  const [category] = categories.filter(item => item.key === data.category);
 
   return (
     <Container>
-      <Title>
-        {data.name}
-      </Title>
+      <Title>{data.name}</Title>
 
-      <Amount>
-        {data.barcode}
-      </Amount>
+      <Amount>{data.barcode}</Amount>
 
       <Footer>
-        <CategoryName>
-          {category.name}
-        </CategoryName>
+        <CategoryName>{category.name}</CategoryName>
       </Footer>
 
       <Footer>
-        <ValidationText>
-          Quantidades:
-        </ValidationText>
+        <ValidationText>Quantidades:</ValidationText>
 
-        <Date>
-          {data.amount}
-        </Date>
+        <Date>{data.amount}</Date>
       </Footer>
 
       <Footer>
-        <ValidationText>
-          Data de Validade:
-        </ValidationText>
+        <ValidationText>Data de Validade:</ValidationText>
 
-        <Date>
-          {data.expiration}
-        </Date>
+        <Date>{data.expiration}</Date>
       </Footer>
 
       <Footer>
-        <ExpirationText>
-          Data de Fabricação:
-        </ExpirationText>
+        <ExpirationText>Data de Fabricação:</ExpirationText>
 
-        <Date>
-          {data.fabrication}
-        </Date>
+        <Date>{data.fabrication}</Date>
       </Footer>
     </Container>
-  )
+  );
 }

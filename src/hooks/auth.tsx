@@ -3,7 +3,7 @@ import React, {
   ReactNode,
   useContext,
   useState,
-  useEffect
+  useEffect,
 } from 'react';
 
 // import * as AuthSession from 'expo-auth-session';
@@ -36,16 +36,16 @@ interface AuthorizationResponse {
 
 const AuthContext = createContext({} as IAuthContextData);
 
-function AuthProvider({ children }: AuthProviderProps) {
+function AuthProvider({children}: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
   const [userStorageLoading, setUserStorageLoading] = useState(true);
 
   const userStorageKey = '@controllac:user';
 
-
   async function signInWithGoogle() {
     try {
-      const CLIENT_ID = '326783233616-js5q38hcadg124mjlelt2ntoplhhvoto.apps.googleusercontent.com ';
+      const CLIENT_ID =
+        '326783233616-js5q38hcadg124mjlelt2ntoplhhvoto.apps.googleusercontent.com ';
       const REDIRECT_URI = 'https://auth.expo.io/@cauandzn/controllac';
 
       const RESPONSE_TYPE = 'token';
@@ -53,18 +53,21 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
 
-      const { type, params } = await AuthSession
-        .startAsync({ authUrl }) as AuthorizationResponse;
+      const {type, params} = (await AuthSession.startAsync({
+        authUrl,
+      })) as AuthorizationResponse;
 
       if (type === 'success') {
-        const response = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${params.access_token}`);
+        const response = await fetch(
+          `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${params.access_token}`,
+        );
         const userInfo = await response.json();
 
         const userLogged = {
           id: userInfo.id,
           email: userInfo.email,
           name: userInfo.given_name,
-          photo: userInfo.picture
+          photo: userInfo.picture,
         };
 
         setUser(userLogged);
@@ -95,18 +98,17 @@ function AuthProvider({ children }: AuthProviderProps) {
     loadUserStorageDate();
   }, []);
 
-
   return (
-    <AuthContext.Provider value={{
-      user,
-      signInWithGoogle,
-      signOut,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        signInWithGoogle,
+        signOut,
+      }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
-
 
 function useAuth() {
   const context = useContext(AuthContext);
@@ -114,5 +116,4 @@ function useAuth() {
   return context;
 }
 
-
-export { AuthProvider, useAuth }
+export {AuthProvider, useAuth};

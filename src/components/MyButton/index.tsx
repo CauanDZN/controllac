@@ -6,7 +6,6 @@ import {
   TouchableOpacityProps,
 } from 'react-native';
 
-
 interface MyButtonProps extends TouchableOpacityProps {
   title: string;
 }
@@ -26,7 +25,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    backgroundColor: "#6505af",
+    backgroundColor: '#6505af',
     borderRadius: 8,
     padding: 20,
     minWidth: 150,
