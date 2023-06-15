@@ -40,7 +40,7 @@ const schema = Yup.object().shape({
     .required('O código de barras é obrigatório'),
 });
 
-export function Register({navigation}) {
+export function Register({navigation, route}) {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [modalVisible, setModalVisisble] = useState(false);
 
@@ -49,6 +49,8 @@ export function Register({navigation}) {
     name: 'Categoria',
   });
 
+  const {barcode} = route.params || {};
+
   const {
     control,
     handleSubmit,
@@ -56,6 +58,9 @@ export function Register({navigation}) {
     formState: {errors},
   } = useForm<FormData>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      barcode: barcode || '', // Preencha o campo com o valor do código de barras ou uma string vazia
+    },
   });
 
   function handleOpenSelectCategoryModal() {

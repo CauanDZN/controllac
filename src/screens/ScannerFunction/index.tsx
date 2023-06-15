@@ -100,7 +100,7 @@ export function ScannerFunction() {
 
           <Button
             title={'Cadastrar'}
-            onPress={() => navigation.navigate('Cadastrar')}
+            onPress={() => navigation.navigate('Cadastrar', {barcode: text})}
             color="tomato"
           />
         </>

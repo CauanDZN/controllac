@@ -46,6 +46,13 @@ export function Dashboard() {
     auth().signOut();
   }
 
+  function handleDeleteTransaction(id: string) {
+    const updatedTransactions = transactions.filter(
+      transaction => transaction.id !== id,
+    );
+    setTransactions(updatedTransactions);
+  }
+
   async function loadTransactions() {
     const dataKey = '@controllac:transactions';
     const response = await AsyncStorage.getItem(dataKey);
@@ -81,6 +88,21 @@ export function Dashboard() {
   function deleteTransactions() {
     const dataKey = '@controllac:transactions';
     AsyncStorage.removeItem(dataKey);
+  }
+
+  async function deleteTransaction(id: string) {
+    const dataKey = '@controllac:transactions';
+    const storedTransactions = await AsyncStorage.getItem(dataKey);
+
+    if (storedTransactions) {
+      const transactions: DataListProps[] = JSON.parse(storedTransactions);
+      const updatedTransactions = transactions.filter(
+        transaction => transaction.id !== id,
+      );
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(updatedTransactions));
+      setTransactions(updatedTransactions);
+    }
   }
 
   useEffect(() => {
@@ -122,7 +144,11 @@ export function Dashboard() {
               data={transactions}
               keyExtractor={item => item.id}
               renderItem={({item}) => (
-                <TransactionCard data={item} key={item.id} />
+                <TransactionCard
+                  data={item}
+                  onDelete={deleteTransaction}
+                  key={item.id}
+                />
               )}
             />
           </Transactions>

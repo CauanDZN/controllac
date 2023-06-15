@@ -1,4 +1,5 @@
 import React from 'react';
+import {Text, TouchableOpacity} from 'react-native';
 
 import {categories} from '../../utils/categories';
 
@@ -26,9 +27,13 @@ export interface TransactionCardProps {
 
 interface Props {
   data: TransactionCardProps;
+  onDelete: (id: string) => void;
 }
 
-export function TransactionCard({data}: Props) {
+export function TransactionCard({data, onDelete}: Props) {
+  const handleDelete = () => {
+    onDelete(data.id);
+  };
   const [category] = categories.filter(item => item.key === data.category);
 
   return (
@@ -57,6 +62,12 @@ export function TransactionCard({data}: Props) {
         <ExpirationText>Data de Fabricação:</ExpirationText>
 
         <Date>{data.fabrication}</Date>
+      </Footer>
+
+      <Footer>
+        <TouchableOpacity onPress={handleDelete}>
+          <Text style={{color: 'red'}}>DELETAR</Text>
+        </TouchableOpacity>
       </Footer>
     </Container>
   );

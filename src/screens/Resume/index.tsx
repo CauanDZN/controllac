@@ -1,5 +1,5 @@
 import React, {useState, useCallback, useEffect} from 'react';
-import {ActivityIndicator} from 'react-native';
+import {ActivityIndicator, Button, Modal, TouchableOpacity} from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {VictoryPie} from 'victory-native';
@@ -9,7 +9,6 @@ import {ptBR} from 'date-fns/locale';
 import {useTheme} from 'styled-components/native';
 import {useFocusEffect} from '@react-navigation/native';
 
-import {HistoryCard} from '../../components/HistoryCard';
 import {categories} from '../../utils/categories';
 import {
   Container,
@@ -23,8 +22,8 @@ import {
   Month,
   ChartContainer,
 } from './styles';
-import {View} from 'react-native';
-import {Text} from 'react-native';
+import {View, Text} from 'react-native';
+import {TransactionCard} from '../../components/TransactionCard';
 
 interface TransactionData {
   name: string;
@@ -49,6 +48,56 @@ export function Resume() {
     [],
   );
   const theme = useTheme();
+  const [productCounts, setProductCounts] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [categoryWithMaxCount, setCategoryWithMaxCount] = useState(null);
+  const [transactionChanged, setTransactionChanged] = useState(false);
+  const [hasTransactions, setHasTransactions] = useState(false);
+  const [categoriesWithMaxCount, setCategoriesWithMaxCount] = useState([]);
+  const [selectedCategoryProducts, setSelectedCategoryProducts] = useState([]);
+
+  useEffect(() => {
+    loadProductCounts();
+  }, []);
+
+  async function updateProductCounts(transactions: TransactionData[]) {
+    const productCountsData = {};
+
+    // Contagem de produtos por categoria
+    for (const category of categories) {
+      const categoryKey = category.key;
+      const categoryProducts = transactions.filter(
+        transaction => transaction.category === categoryKey,
+      );
+      const productCount = categoryProducts.length;
+      productCountsData[categoryKey] = productCount;
+    }
+
+    setProductCounts(productCountsData);
+  }
+
+  async function loadProductCounts() {
+    const productCountsData = {};
+
+    // Obtenha os registros do AsyncStorage
+    const dataKey = '@controllac:transactions';
+    const response = await AsyncStorage.getItem(dataKey);
+    const transactions = response ? JSON.parse(response) : [];
+
+    // Contagem de produtos por categoria
+    for (const category of categories) {
+      const categoryKey = category.key;
+      const categoryProducts = transactions.filter(
+        transaction => transaction.category === categoryKey,
+      );
+      const productCount = categoryProducts.length;
+      productCountsData[categoryKey] = productCount;
+    }
+
+    setProductCounts(productCountsData);
+    setTransactionChanged(true);
+  }
 
   function handleDateChange(action: 'next' | 'prev') {
     if (action === 'next') {
@@ -67,66 +116,78 @@ export function Resume() {
       ? JSON.parse(response)
       : [];
 
-    const expensives = responseFormatted.filter(
-      expensive =>
-        new Date(expensive.date).getMonth() === selectedDate.getMonth() &&
-        new Date(expensive.date).getFullYear() === selectedDate.getFullYear(),
-    );
+    const transactionsExist = responseFormatted.length > 0;
 
-    const expensivesTotal = expensives.reduce(
-      (accumulator: number, expensive: TransactionData) => {
-        return accumulator + Number(expensive.amount);
-      },
-      0,
-    );
+    setHasTransactions(transactionsExist);
 
-    const totalByCategory: CategoryData[] = [];
+    let totalTransactions = responseFormatted.length;
 
-    categories.forEach(category => {
-      let categorySum = 0;
-      const products: TransactionData[] = [];
-
-      expensives.forEach(expensive => {
-        if (expensive.category === category.key) {
-          categorySum += Number(expensive.amount);
-          products.push(expensive);
-        }
-      });
-
-      if (categorySum > 0) {
-        const totalFormatted = categorySum.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-
-        const percent = `${((categorySum / expensivesTotal) * 100).toFixed(
-          0,
-        )}%`;
-
-        totalByCategory.push({
-          key: category.key,
-          name: category.name,
-          totalFormatted,
-          percent,
-          color: category.color,
-          products,
-        });
-      }
+    const totalByCategoriesData: CategoryData[] = categories.map(category => {
+      const categoryProducts = responseFormatted.filter(
+        transaction => transaction.category === category.key,
+      );
+      const totalFormatted = String(categoryProducts.length);
+      const percent = (
+        (categoryProducts.length / totalTransactions) *
+        100
+      ).toFixed(0);
+      return {
+        ...category,
+        totalFormatted,
+        percent,
+        products: categoryProducts,
+      };
     });
 
-    setTotalByCategories(totalByCategory);
+    const categoryCounts = categories.map(category => ({
+      categoryKey: category.key,
+      count:
+        totalByCategoriesData.find(item => item.key === category.key)?.products
+          .length || 0,
+    }));
+
+    let categoriesWithMaxCount = [];
+
+    if (totalTransactions > 0) {
+      const maxCount = Math.max(...categoryCounts.map(item => item.count));
+      categoriesWithMaxCount = categoryCounts
+        .filter(item => item.count === maxCount)
+        .map(item => item.categoryKey);
+    }
+
+    setTotalByCategories(totalByCategoriesData);
+    setCategoriesWithMaxCount(categoriesWithMaxCount);
+    setCategoryWithMaxCount(categoryWithMaxCount);
     setIsLoading(false);
+
+    updateProductCounts(responseFormatted); // Atualiza os registros
+  }
+
+  function handleCategoryPress(category) {
+    const categoryProducts = totalByCategories.find(
+      item => item.key === category.key,
+    ).products;
+    setSelectedCategory({...category, products: categoryProducts});
+    setSelectedCategoryProducts(categoryProducts); // Definir os produtos da categoria selecionada
+    setModalVisible(true);
+    updateProductCounts(categoryProducts); // Atualizar os registros da categoria selecionada
+  }
+
+  function closeModal() {
+    setSelectedCategory(null);
+    setModalVisible(false);
   }
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [selectedDate]),
+    }, [selectedDate, transactionChanged]),
   );
 
   useEffect(() => {
     loadData();
-  }, []);
+    setTransactionChanged(false);
+  }, [selectedDate, transactionChanged]);
 
   return (
     <Container>
@@ -156,12 +217,102 @@ export function Resume() {
             </MountSelectButton>
           </MonthSelect>
 
+          {hasTransactions ? (
+            <>
+              <ChartContainer>
+                <VictoryPie
+                  data={totalByCategories.map(category => ({
+                    x: category.name,
+                    y: Number(category.totalFormatted.replace(/[^\d.]/g, '')),
+                  }))}
+                  colorScale={totalByCategories.map(category => category.color)}
+                  innerRadius={70}
+                  labels={({datum}) => `${datum.x}\n${datum.y}`}
+                  labelRadius={({innerRadius}) => innerRadius + 50}
+                  style={{
+                    labels: {
+                      fontSize: RFValue(14),
+                      fontWeight: 'bold',
+                      fill: '#8d8d8d',
+                    },
+                  }}
+                  events={[
+                    {
+                      target: 'data',
+                      eventHandlers: {
+                        onMouseOver: () => {
+                          return [
+                            {
+                              target: 'data',
+                              mutation: () => ({
+                                style: {opacity: 1},
+                              }),
+                            },
+                          ];
+                        },
+                        onMouseOut: () => {
+                          return [
+                            {
+                              target: 'data',
+                              mutation: () => {},
+                            },
+                          ];
+                        },
+                      },
+                    },
+                  ]}
+                />
+                {categoriesWithMaxCount.length > 1 ? (
+                  <Text style={{alignSelf: 'center', marginTop: -20}}>
+                    Categorias com mais registros:{' '}
+                    {categoriesWithMaxCount
+                      .map(
+                        categoryKey =>
+                          categories.find(
+                            category => category.key === categoryKey,
+                          )?.name,
+                      )
+                      .join(' ')}
+                  </Text>
+                ) : (
+                  <Text style={{alignSelf: 'center', marginTop: -20}}>
+                    Categoria com mais registros:{' '}
+                    {
+                      categories.find(
+                        category => category.key === categoriesWithMaxCount[0],
+                      )?.name
+                    }
+                  </Text>
+                )}
+              </ChartContainer>
+            </>
+          ) : (
+            <Text style={{alignSelf: 'center', marginTop: 20}}>
+              Não há gráficos para exibir.
+            </Text>
+          )}
+
           {categories.map(category => (
-            <View key={category.key}>
-              <Text>{category.name}</Text>
-              <Text>{category.color}</Text>
-            </View>
+            <TouchableOpacity
+              key={category.key}
+              onPress={() => handleCategoryPress(category)}>
+              <View style={{marginTop: 8}}>
+                <Text style={{color: category.color}}>{category.name}</Text>
+                <Text>Registros: {productCounts[category.key]}</Text>
+              </View>
+            </TouchableOpacity>
           ))}
+
+          <Modal visible={modalVisible} animationType="slide">
+            <View>
+              <Text>Nome: {selectedCategory?.name}</Text>
+              <Text>Cor: {selectedCategory?.color}</Text>
+              {selectedCategoryProducts.map(product => (
+                <TransactionCard key={product.id} data={product} />
+              ))}
+              <Button title="Fechar" onPress={closeModal} />
+            </View>
+          </Modal>
         </Content>
       )}
     </Container>
