@@ -1,6 +1,5 @@
 import styled from 'styled-components/native';
 import {RFValue} from 'react-native-responsive-fontsize';
-import {BorderlessButton} from 'react-native-gesture-handler';
 import {Feather} from '@expo/vector-icons';
 
 export const Container = styled.View`
@@ -37,8 +36,6 @@ export const MonthSelect = styled.View`
   align-items: center;
   margin-top: 24px;
 `;
-
-export const MountSelectButton = styled(BorderlessButton)``;
 
 export const MonthSelectIcon = styled(Feather)`
   font-size: ${RFValue(24)}px;

@@ -10,8 +10,10 @@ import {
   Poppins_500Medium,
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
+import {AuthRoutes} from './auth.routes';
 
 export function Routes() {
+  const {user} = useAuth();
   const Stack = createNativeStackNavigator();
 
   return (

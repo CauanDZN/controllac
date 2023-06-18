@@ -6,6 +6,7 @@ import {
   Alert,
   Button,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import * as Yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
@@ -115,61 +116,63 @@ export function Register({navigation, route}) {
           <Title>Cadastro</Title>
         </Header>
 
-        <Form>
-          <Fields>
-            <InputForm
-              name="barcode"
-              control={control}
-              placeholder="Código de Barras"
-              keyboardType="numeric"
-              error={errors.barcode && errors.barcode.message}
-            />
+        <ScrollView>
+          <Form>
+            <Fields>
+              <InputForm
+                name="barcode"
+                control={control}
+                placeholder="Código de Barras"
+                keyboardType="numeric"
+                error={errors.barcode && errors.barcode.message}
+              />
 
-            <InputForm
-              name="name"
-              control={control}
-              placeholder="Nome"
-              autoCorrect={false}
-              error={errors.name && errors.name.message}
-            />
+              <InputForm
+                name="name"
+                control={control}
+                placeholder="Nome"
+                autoCorrect={false}
+                error={errors.name && errors.name.message}
+              />
 
-            <InputForm
-              name="fabrication"
-              control={control}
-              placeholder="Data de Fabricação"
-              error={errors.fabrication && errors.fabrication.message}
-            />
+              <InputForm
+                name="fabrication"
+                control={control}
+                placeholder="Data de Fabricação"
+                error={errors.fabrication && errors.fabrication.message}
+              />
 
-            <InputForm
-              name="expiration"
-              control={control}
-              placeholder="Data de Validade"
-              error={errors.expiration && errors.expiration.message}
-            />
+              <InputForm
+                name="expiration"
+                control={control}
+                placeholder="Data de Validade"
+                error={errors.expiration && errors.expiration.message}
+              />
 
-            <InputForm
-              name="amount"
-              control={control}
-              placeholder="Quantidade"
-              keyboardType="numeric"
-              error={errors.amount && errors.amount.message}
-            />
+              <InputForm
+                name="amount"
+                control={control}
+                placeholder="Quantidade"
+                keyboardType="numeric"
+                error={errors.amount && errors.amount.message}
+              />
 
-            <InputForm
-              name="supplier"
-              control={control}
-              placeholder="CNPJ do Fornecedor"
-              error={errors.supplier && errors.supplier.message}
-            />
+              <InputForm
+                name="supplier"
+                control={control}
+                placeholder="CNPJ do Fornecedor"
+                error={errors.supplier && errors.supplier.message}
+              />
 
-            <Button
-              title={category.name}
-              onPress={handleOpenSelectCategoryModal}
-            />
-          </Fields>
+              <Button
+                title={category.name}
+                onPress={handleOpenSelectCategoryModal}
+              />
+            </Fields>
 
-          <Button title="Enviar" onPress={handleSubmit(handleRegister)} />
-        </Form>
+            <Button title="Enviar" onPress={handleSubmit(handleRegister)} />
+          </Form>
+        </ScrollView>
 
         <Modal visible={categoryModalOpen}>
           <CategorySelect

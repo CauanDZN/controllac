@@ -17,7 +17,6 @@ import {
   LoadContainer,
   Content,
   MonthSelect,
-  MountSelectButton,
   MonthSelectIcon,
   Month,
   ChartContainer,
@@ -206,15 +205,7 @@ export function Resume() {
             paddingBottom: useBottomTabBarHeight(),
           }}>
           <MonthSelect>
-            <MountSelectButton onPress={() => handleDateChange('prev')}>
-              <MonthSelectIcon name="chevron-left" />
-            </MountSelectButton>
-
             <Month>{format(selectedDate, 'MMMM, yyyy', {locale: ptBR})}</Month>
-
-            <MountSelectButton onPress={() => handleDateChange('next')}>
-              <MonthSelectIcon name="chevron-right" />
-            </MountSelectButton>
           </MonthSelect>
 
           {hasTransactions ? (

@@ -1,80 +1,46 @@
-import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, View} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ThemeProvider} from 'styled-components';
-import {StatusBar} from 'react-native';
-import auth, {firebase, FirebaseAuthTypes} from '@react-native-firebase/auth';
-import {firebaseConfig} from './src/utils/firebaseconfig';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import 'react-native-gesture-handler';
 import 'intl';
 import 'intl/locale-data/jsonp/pt-BR';
 
-import theme from './src/global/styles/theme';
+import React, {useEffect} from 'react';
+import {StatusBar} from 'react-native';
+import SplashScreen from 'react-native-splash-screen';
+import {ThemeProvider} from 'styled-components';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+
 import {Routes} from './src/routes';
 
-const App = () => {
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+import theme from './src/global/styles/theme';
 
-  useEffect(() => {
-    const fetchUserStorage = async () => {
-      const storedUser = await AsyncStorage.getItem('token');
-      if (storedUser !== null) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        setUser(null);
-      }
-      setInitializing(false);
-    };
+import {AuthProvider} from './src/hooks/auth';
 
-    fetchUserStorage();
-  }, []);
+export default function App() {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_700Bold,
+  });
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(async _user => {
-      if (_user) {
-        // Aqui você pode fazer a validação do token ou qualquer outra lógica de autenticação
-        const tokenValid = await validateToken(_user.token); // Substitua com a sua lógica de validação do token
-        if (tokenValid) {
-          setUser(_user);
-        } else {
-          setUser(null);
-          await AsyncStorage.removeItem('token');
-        }
-      } else {
-        setUser(null);
-      }
-    });
-
-    return unsubscribe;
+    // Ocultar a splash screen ao iniciar o aplicativo
+    SplashScreen.hide();
   }, []);
 
-  const validateToken = async (token: string) => {
-    // Implemente a lógica de validação do token aqui
-    // Retorne true se o token for válido e false caso contrário
-    return true;
-  };
-
-  if (initializing) {
-    return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator color="#000" />
-      </View>
-    );
+  if (!fontsLoaded) {
+    return null; // ou qualquer outro componente de carregamento personalizado que você deseje exibir
   }
 
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <ThemeProvider theme={theme}>
-        <StatusBar barStyle="light-content" backgroundColor="#320059" />
-        <Routes />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider theme={theme}>
+      <StatusBar barStyle="light-content" />
+      <Routes />
+    </ThemeProvider>
   );
-};
-
-export default App;
+}
