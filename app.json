@@ -1,5 +1,12 @@
 {
   "name": "controllac",
   "displayName": "Controllac",
-  "scheme": "com.controllac"
+  "scheme": "com.controllac",
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "08a871fc-14ba-4ce2-8b06-69bb0bfb4c93"
+      }
+    }
+  }
 }
