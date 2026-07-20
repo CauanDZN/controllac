@@ -1,111 +1,99 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  Modal,
-  TouchableWithoutFeedback,
-  Keyboard,
   Alert,
-  Button,
-  SafeAreaView,
+  Keyboard,
+  Modal,
   ScrollView,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import * as Yup from 'yup';
+import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {yupResolver} from '@hookform/resolvers/yup';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {uuid} from 'uuid-random';
 import {useForm} from 'react-hook-form';
-import {format} from 'date-fns';
+import * as yup from 'yup';
 
-import {InputForm} from '../../components/Form/InputForm';
-import {CategorySelectButton} from '../../components/Form/CategorySelectButton';
-import {useAuth} from '../../hooks/auth';
+import {Button} from '@/components/Button';
+import {CategoryButton} from '@/components/CategoryButton';
+import {InputForm} from '@/components/InputForm';
+import {AppTabParamList} from '@/routes/types';
+import {productsStorage} from '@/storage/productsStorage';
+import {Category} from '@/utils/categories';
+import {isValidMaskedDate, maskedDateToISO} from '@/utils/date';
+
 import {CategorySelect} from '../CategorySelect';
-import {Container, Header, Title, Form, Fields, Date} from './styles';
+import {Container, Fields, Form, Header, Title} from './styles';
+
+type Props = BottomTabScreenProps<AppTabParamList, 'Cadastrar'>;
 
 interface FormData {
   name: string;
   barcode: string;
-  expiration: string;
-  fabrication: string;
-  supplier: string;
+  fabricationDate: string;
+  expirationDate: string;
   amount: string;
+  supplier: string;
 }
 
-const schema = Yup.object().shape({
-  name: Yup.string().required('O nome é obrigatório'),
-  expiration: Yup.string().required('A data de validade é obrigatória'),
-  fabrication: Yup.string().required('A data de fabricação é obrigatória'),
-  supplier: Yup.string().required('O CNPJ do Fornecedor é obrigatório'),
-  amount: Yup.number().required('A quantidade de lotes é obrigatória'),
-  barcode: Yup.string()
-    .typeError('Informe o código de barras')
-    .required('O código de barras é obrigatório'),
+const schema = yup.object({
+  barcode: yup.string().required('O código de barras é obrigatório'),
+  name: yup.string().required('O nome é obrigatório'),
+  fabricationDate: yup
+    .string()
+    .required('A data de fabricação é obrigatória')
+    .test('valid-date', 'Data inválida', isValidMaskedDate),
+  expirationDate: yup
+    .string()
+    .required('A data de validade é obrigatória')
+    .test('valid-date', 'Data inválida', isValidMaskedDate),
+  amount: yup.string().required('A quantidade é obrigatória'),
+  supplier: yup.string().required('O fornecedor é obrigatório'),
 });
 
-export function Register({navigation, route}) {
+export function Register({navigation, route}: Props) {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [modalVisible, setModalVisisble] = useState(false);
-
-  const [category, setCategory] = useState({
-    key: 'category',
-    name: 'Categoria',
-  });
-
-  const {barcode} = route.params || {};
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: {errors},
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      barcode: barcode || '', // Preencha o campo com o valor do código de barras ou uma string vazia
+      barcode: route.params?.barcode ?? '',
     },
   });
 
-  function handleOpenSelectCategoryModal() {
-    setCategoryModalOpen(true);
-  }
-
-  function handleCloseSelectCategoryModal() {
-    setCategoryModalOpen(false);
-  }
+  useEffect(() => {
+    if (route.params?.barcode) {
+      setValue('barcode', route.params.barcode);
+    }
+  }, [route.params?.barcode, setValue]);
 
   async function handleRegister(form: FormData) {
-    if (category.key === 'category') {
-      return Alert.alert('Selecione a categoria!');
+    if (!selectedCategory) {
+      Alert.alert('Selecione a categoria!');
+      return;
     }
 
-    const newTransaction = {
-      name: form.name,
-      barcode: form.barcode,
-      expiration: form.expiration,
-      fabrication: form.fabrication,
-      supplier: form.supplier,
-      amount: form.amount,
-      category: category.key,
-    };
-
     try {
-      const dataKey = '@controllac:transactions';
-      const data = await AsyncStorage.getItem(dataKey);
-      const currentData = data ? JSON.parse(data) : [];
-
-      const dataFormatted = [...currentData, newTransaction];
-
-      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
-
-      reset();
-      setCategory({
-        key: 'category',
-        name: 'Categoria',
+      await productsStorage.add({
+        name: form.name,
+        barcode: form.barcode,
+        category: selectedCategory.key,
+        amount: form.amount,
+        supplier: form.supplier,
+        fabricationDate: maskedDateToISO(form.fabricationDate),
+        expirationDate: maskedDateToISO(form.expirationDate),
       });
 
+      reset({barcode: ''});
+      setSelectedCategory(undefined);
+
       navigation.navigate('Listagem');
-    } catch (error) {
-      console.log(error);
-      Alert.alert('Não foi possível salvar');
+    } catch {
+      Alert.alert('Não foi possível salvar o produto');
     }
   }
 
@@ -124,7 +112,7 @@ export function Register({navigation, route}) {
                 control={control}
                 placeholder="Código de Barras"
                 keyboardType="numeric"
-                error={errors.barcode && errors.barcode.message}
+                error={errors.barcode?.message}
               />
 
               <InputForm
@@ -132,21 +120,25 @@ export function Register({navigation, route}) {
                 control={control}
                 placeholder="Nome"
                 autoCorrect={false}
-                error={errors.name && errors.name.message}
+                error={errors.name?.message}
               />
 
               <InputForm
-                name="fabrication"
+                name="fabricationDate"
                 control={control}
                 placeholder="Data de Fabricação"
-                error={errors.fabrication && errors.fabrication.message}
+                keyboardType="numeric"
+                isDateField
+                error={errors.fabricationDate?.message}
               />
 
               <InputForm
-                name="expiration"
+                name="expirationDate"
                 control={control}
                 placeholder="Data de Validade"
-                error={errors.expiration && errors.expiration.message}
+                keyboardType="numeric"
+                isDateField
+                error={errors.expirationDate?.message}
               />
 
               <InputForm
@@ -154,31 +146,31 @@ export function Register({navigation, route}) {
                 control={control}
                 placeholder="Quantidade"
                 keyboardType="numeric"
-                error={errors.amount && errors.amount.message}
+                error={errors.amount?.message}
               />
 
               <InputForm
                 name="supplier"
                 control={control}
-                placeholder="CNPJ do Fornecedor"
-                error={errors.supplier && errors.supplier.message}
+                placeholder="Fornecedor"
+                error={errors.supplier?.message}
               />
 
-              <Button
-                title={category.name}
-                onPress={handleOpenSelectCategoryModal}
+              <CategoryButton
+                category={selectedCategory}
+                onPress={() => setCategoryModalOpen(true)}
               />
             </Fields>
 
-            <Button title="Enviar" onPress={handleSubmit(handleRegister)} />
+            <Button title="Salvar" onPress={handleSubmit(handleRegister)} />
           </Form>
         </ScrollView>
 
         <Modal visible={categoryModalOpen}>
           <CategorySelect
-            category={category}
-            setCategory={setCategory}
-            closeSelectCategory={handleCloseSelectCategoryModal}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            onClose={() => setCategoryModalOpen(false)}
           />
         </Modal>
       </Container>

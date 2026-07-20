@@ -1,44 +1,33 @@
 import React from 'react';
+import {FlatList} from 'react-native';
 
-import {Button} from 'react-native';
-
-import {FlatList} from 'react-native-gesture-handler';
-
-// import { Button } from '../../components/Form/Button';
-
-import {categories} from '../../utils/categories';
+import {Button} from '@/components/Button';
+import {Category as CategoryType, categories} from '@/utils/categories';
 
 import {
-  Container,
-  Header,
-  Title,
   Category,
-  Icon,
+  CategoryInfo,
+  CheckIcon,
+  Container,
+  Dot,
+  Footer,
+  Header,
   Name,
   Separator,
-  Footer,
+  Title,
 } from './styles';
 
-interface Category {
-  key: string;
-  name: string;
-}
-
 interface Props {
-  category: Category;
-  setCategory: (category: Category) => void;
-  closeSelectCategory: () => void;
+  selectedCategory?: CategoryType;
+  onSelectCategory: (category: CategoryType) => void;
+  onClose: () => void;
 }
 
 export function CategorySelect({
-  category,
-  setCategory,
-  closeSelectCategory,
+  selectedCategory,
+  onSelectCategory,
+  onClose,
 }: Props) {
-  function handleCategorySelect(category: Category) {
-    setCategory(category);
-  }
-
   return (
     <Container>
       <Header>
@@ -49,18 +38,27 @@ export function CategorySelect({
         data={categories}
         style={{flex: 1, width: '100%'}}
         keyExtractor={item => item.key}
-        renderItem={({item}) => (
-          <Category
-            onPress={() => handleCategorySelect(item)}
-            isActive={category.key === item.key}>
-            <Name>{item.name}</Name>
-          </Category>
-        )}
+        renderItem={({item}) => {
+          const isActive = selectedCategory?.key === item.key;
+
+          return (
+            <Category
+              onPress={() => onSelectCategory(item)}
+              isActive={isActive}>
+              <CategoryInfo>
+                <Dot color={item.color} />
+                <Name>{item.name}</Name>
+              </CategoryInfo>
+
+              {isActive && <CheckIcon name="check" />}
+            </Category>
+          );
+        }}
         ItemSeparatorComponent={() => <Separator />}
       />
 
       <Footer>
-        <Button title="Selecionar" onPress={closeSelectCategory} />
+        <Button title="Selecionar" onPress={onClose} />
       </Footer>
     </Container>
   );

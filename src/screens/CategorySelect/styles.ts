@@ -1,15 +1,12 @@
-import {RFValue} from 'react-native-responsive-fontsize';
-import {MaterialCommunityIcons} from '@expo/vector-icons';
 import styled from 'styled-components/native';
-import theme from '../../global/styles/theme';
-
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {Feather} from '@expo/vector-icons';
+import {RFValue} from 'react-native-responsive-fontsize';
 
 interface CategoryProps {
   isActive: boolean;
 }
 
-export const Container = styled(GestureHandlerRootView)`
+export const Container = styled.View`
   flex: 1;
   background-color: ${({theme}) => theme.colors.background};
 `;
@@ -37,13 +34,21 @@ export const Category = styled.TouchableOpacity<CategoryProps>`
 
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
 
-  background-color: ${({isActive}) =>
-    isActive ? theme.colors.text : theme.colors.background};
+  background-color: ${({isActive, theme}) => (isActive ? theme.colors.background : theme.colors.shape)};
 `;
 
-export const Icon = styled(MaterialCommunityIcons)`
-  font-size: ${RFValue(20)}px;
+export const CategoryInfo = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const Dot = styled.View<{color: string}>`
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background-color: ${({color}) => color};
   margin-right: 16px;
 `;
 
@@ -53,10 +58,15 @@ export const Name = styled.Text`
   color: ${({theme}) => theme.colors.text_dark};
 `;
 
+export const CheckIcon = styled(Feather)`
+  font-size: ${RFValue(18)}px;
+  color: ${({theme}) => theme.colors.success};
+`;
+
 export const Separator = styled.View`
   height: 1px;
   width: 100%;
-  background-color: ${({theme}) => theme.colors.text};
+  background-color: ${({theme}) => theme.colors.background};
 `;
 
 export const Footer = styled.View`
