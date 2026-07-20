@@ -1,62 +1,130 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Alert, Button} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {BarCodeScanner} from 'expo-barcode-scanner';
+import React, {useState} from 'react';
+import {Alert} from 'react-native';
+import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import {BarcodeType, CameraView, useCameraPermissions} from 'expo-camera';
+import * as Clipboard from 'expo-clipboard';
+import {useAudioPlayer} from 'expo-audio';
 
-import {Header, Title} from './styles';
+import {Button} from '@/components/Button';
+import {AppTabParamList} from '@/routes/types';
 
-export function Scanner() {
-  const [hasPermission, setHasPermission] = useState(null);
-  const navigation = useNavigation();
+import {
+  ActionsStack,
+  CameraArea,
+  CenterContainer,
+  Container,
+  Header,
+  InfoText,
+  ScannedCode,
+  ScannedLabel,
+  ScannedPanel,
+  Title,
+} from './styles';
 
-  const askForCameraPermission = () => {
-    (async () => {
-      const {status} = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  };
+const BARCODE_TYPES: BarcodeType[] = [
+  'ean13',
+  'ean8',
+  'upc_a',
+  'upc_e',
+  'code128',
+  'qr',
+];
 
-  useEffect(() => {
-    askForCameraPermission();
-  }, []);
+type Props = BottomTabScreenProps<AppTabParamList, 'Scanner'>;
+
+export function Scanner({navigation}: Props) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scannedCode, setScannedCode] = useState<string>();
+
+  const beepPlayer = useAudioPlayer(require('../../assets/scanner_bip.mp3'));
+
+  function handleBarcodeScanned({data}: {data: string}) {
+    setScannedCode(data);
+    beepPlayer.seekTo(0);
+    beepPlayer.play();
+  }
+
+  async function handleCopyToClipboard() {
+    if (!scannedCode) {
+      return;
+    }
+
+    await Clipboard.setStringAsync(scannedCode);
+    Alert.alert(
+      'Copiado!',
+      'Código de barras copiado para a área de transferência.',
+    );
+  }
+
+  function handleRegisterProduct() {
+    if (!scannedCode) {
+      return;
+    }
+
+    navigation.navigate('Cadastrar', {barcode: scannedCode});
+    setScannedCode(undefined);
+  }
+
+  if (!permission) {
+    return (
+      <Container>
+        <Header>
+          <Title>Scanner</Title>
+        </Header>
+        <CenterContainer>
+          <InfoText>Aguardando câmera...</InfoText>
+        </CenterContainer>
+      </Container>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <Container>
+        <Header>
+          <Title>Scanner</Title>
+        </Header>
+        <CenterContainer>
+          <InfoText>
+            Precisamos da sua permissão para usar a câmera e ler o código de
+            barras dos produtos.
+          </InfoText>
+          <Button title="Permitir câmera" onPress={requestPermission} />
+        </CenterContainer>
+      </Container>
+    );
+  }
 
   return (
-    <View style={styles.container}>
+    <Container>
       <Header>
         <Title>Scanner</Title>
       </Header>
 
-      <View style={styles.button}>
-        <Text>Clique no botão para escanear!</Text>
-        <Button
-          title="Escanear"
-          onPress={() => navigation.navigate('ScannerFunction')}
+      <CameraArea>
+        <CameraView
+          style={{flex: 1}}
+          facing="back"
+          barcodeScannerSettings={{barcodeTypes: BARCODE_TYPES}}
+          onBarcodeScanned={scannedCode ? undefined : handleBarcodeScanned}
         />
-      </View>
-    </View>
+      </CameraArea>
+
+      {scannedCode && (
+        <ScannedPanel>
+          <ScannedLabel>Código lido</ScannedLabel>
+          <ScannedCode>{scannedCode}</ScannedCode>
+
+          <ActionsStack>
+            <Button title="Cadastrar produto" onPress={handleRegisterProduct} />
+            <Button title="Copiar código" onPress={handleCopyToClipboard} />
+            <Button
+              title="Escanear novamente"
+              onPress={() => setScannedCode(undefined)}
+            />
+          </ActionsStack>
+        </ScannedPanel>
+      )}
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 0,
-  },
-  button: {
-    padding: 30,
-  },
-  maintext: {
-    fontSize: 16,
-    margin: 20,
-  },
-  barcodebox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 300,
-    width: 500,
-    overflow: 'hidden',
-    borderRadius: 30,
-    backgroundColor: 'transparent',
-  },
-});

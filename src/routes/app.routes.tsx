@@ -1,21 +1,17 @@
 import React from 'react';
 import {Platform} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {useTheme} from 'styled-components';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {useTheme} from 'styled-components';
 
-import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_700Bold,
-} from '@expo-google-fonts/poppins';
+import {Home} from '@/screens/Home';
+import {Register} from '@/screens/Register';
+import {Resume} from '@/screens/Resume';
+import {Scanner} from '@/screens/Scanner';
 
-import {Dashboard} from '../screens/Dashboard';
-import {Scanner} from '../screens/Scanner';
-import {Register} from '../screens/Register';
-import {Resume} from '../screens/Resume';
+import {AppTabParamList} from './types';
 
-const {Navigator, Screen} = createBottomTabNavigator();
+const {Navigator, Screen} = createBottomTabNavigator<AppTabParamList>();
 
 export function AppRoutes() {
   const theme = useTheme();
@@ -33,7 +29,7 @@ export function AppRoutes() {
       }}>
       <Screen
         name="Listagem"
-        component={Dashboard}
+        component={Home}
         options={{
           tabBarIcon: ({size, color}) => (
             <MaterialIcons
