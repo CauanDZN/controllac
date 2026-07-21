@@ -5,6 +5,7 @@ export type Product = {
   name: string;
   barcode: string;
   category: CategoryKey;
+  minimumStock?: number;
   createdAt: string;
 };
 

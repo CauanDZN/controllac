@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {ActivityIndicator, Modal} from 'react-native';
+import {ActivityIndicator, Alert, Modal} from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -13,10 +13,18 @@ import {Button} from '@/components/Button';
 import {LoadError} from '@/components/LoadError';
 import {RootStackParamList} from '@/routes/types';
 import {batchesStorage} from '@/storage/batchesStorage';
+import {movementsStorage} from '@/storage/movementsStorage';
 import {productsStorage} from '@/storage/productsStorage';
 import {Batch} from '@/types/batch';
+import {Movement, MovementType} from '@/types/movement';
 import {Product} from '@/types/product';
 import {Category, categories} from '@/utils/categories';
+import {
+  computeFinanceSummary,
+  exportReport,
+  formatCurrency,
+} from '@/utils/report';
+import {checkAndNotifyLowStock} from '@/utils/stock';
 
 import {
   CategoryCount,
@@ -32,6 +40,12 @@ import {
   Container,
   Content,
   EmptyText,
+  ExportButtonWrapper,
+  FinanceLabel,
+  FinanceRow,
+  FinanceSection,
+  FinanceTitle,
+  FinanceValue,
   Header,
   HighlightText,
   LoadContainer,
@@ -57,8 +71,10 @@ type CategorySummary = Category & {items: BatchListItem[]};
 export function Resume() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [movements, setMovements] = useState<Movement[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>();
 
@@ -72,11 +88,16 @@ export function Resume() {
 
     setHasError(false);
 
-    Promise.all([productsStorage.getAll(), batchesStorage.getAll()])
-      .then(([storedProducts, storedBatches]) => {
+    Promise.all([
+      productsStorage.getAll(),
+      batchesStorage.getAll(),
+      movementsStorage.getAll(),
+    ])
+      .then(([storedProducts, storedBatches, storedMovements]) => {
         if (active) {
           setProducts(storedProducts);
           setBatches(storedBatches);
+          setMovements(storedMovements);
         }
       })
       .catch(() => {
@@ -96,22 +117,6 @@ export function Resume() {
   }, []);
 
   useFocusEffect(loadData);
-
-  function handleDateChange(action: 'next' | 'prev') {
-    setSelectedDate(current =>
-      action === 'next' ? addMonths(current, 1) : subMonths(current, 1),
-    );
-  }
-
-  async function handleDeleteBatch(id: string) {
-    await batchesStorage.remove(id);
-    setBatches(current => current.filter(batch => batch.id !== id));
-  }
-
-  function handleEditBatch(batchId: string) {
-    setSelectedCategoryKey(undefined);
-    navigation.navigate('LoteForm', {batchId});
-  }
 
   const productsById = useMemo(
     () => new Map(products.map(product => [product.id, product])),
@@ -163,6 +168,73 @@ export function Resume() {
   const selectedCategory = categoriesSummary.find(
     category => category.key === selectedCategoryKey,
   );
+
+  const movementsInMonth = useMemo(
+    () =>
+      movements.filter(movement =>
+        isSameMonth(parseISO(movement.date), selectedDate),
+      ),
+    [movements, selectedDate],
+  );
+
+  const financeSummary = useMemo(
+    () => computeFinanceSummary(movementsInMonth),
+    [movementsInMonth],
+  );
+
+  function handleDateChange(action: 'next' | 'prev') {
+    setSelectedDate(current =>
+      action === 'next' ? addMonths(current, 1) : subMonths(current, 1),
+    );
+  }
+
+  function handleDeleteBatch(id: string) {
+    const item = itemsInMonth.find(current => current.batch.id === id);
+
+    if (!item) {
+      return;
+    }
+
+    Alert.alert('Excluir lote', 'Como esse lote foi baixado?', [
+      {text: 'Cancelar', style: 'cancel'},
+      {text: 'Vendido', onPress: () => confirmDeleteBatch(item, 'sold')},
+      {
+        text: 'Perdido/Vencido',
+        style: 'destructive',
+        onPress: () => confirmDeleteBatch(item, 'lost'),
+      },
+    ]);
+  }
+
+  async function confirmDeleteBatch(item: BatchListItem, type: MovementType) {
+    await batchesStorage.remove(item.batch.id, type, {
+      name: item.product.name,
+      category: item.product.category,
+    });
+    setBatches(current => current.filter(batch => batch.id !== item.batch.id));
+    await checkAndNotifyLowStock(item.product.id);
+  }
+
+  function handleEditBatch(batchId: string) {
+    setSelectedCategoryKey(undefined);
+    navigation.navigate('LoteForm', {batchId});
+  }
+
+  async function handleExportReport() {
+    if (isExporting) {
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      await exportReport(movementsInMonth, format(selectedDate, 'yyyy-MM'));
+    } catch {
+      Alert.alert('Não foi possível exportar o relatório');
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -261,6 +333,58 @@ export function Resume() {
         ) : (
           <EmptyText>Nenhum lote cadastrado neste mês.</EmptyText>
         )}
+
+        <FinanceSection>
+          <FinanceTitle>Resumo financeiro do mês</FinanceTitle>
+
+          {movementsInMonth.length === 0 ? (
+            <EmptyText>
+              Nenhum lote baixado (vendido ou perdido) neste mês.
+            </EmptyText>
+          ) : (
+            <>
+              <FinanceRow>
+                <FinanceLabel>
+                  Receita ({financeSummary.soldCount} vendido(s))
+                </FinanceLabel>
+                <FinanceValue tone="positive">
+                  {formatCurrency(financeSummary.revenue)}
+                </FinanceValue>
+              </FinanceRow>
+
+              <FinanceRow>
+                <FinanceLabel>Custo</FinanceLabel>
+                <FinanceValue>
+                  {formatCurrency(financeSummary.cost)}
+                </FinanceValue>
+              </FinanceRow>
+
+              <FinanceRow>
+                <FinanceLabel>Lucro</FinanceLabel>
+                <FinanceValue
+                  tone={financeSummary.profit >= 0 ? 'positive' : 'negative'}>
+                  {formatCurrency(financeSummary.profit)}
+                </FinanceValue>
+              </FinanceRow>
+
+              <FinanceRow>
+                <FinanceLabel>
+                  Perdido ({financeSummary.lostCount} vencido(s)/perdido(s))
+                </FinanceLabel>
+                <FinanceValue tone="negative">
+                  {formatCurrency(financeSummary.lostValue)}
+                </FinanceValue>
+              </FinanceRow>
+            </>
+          )}
+
+          <ExportButtonWrapper>
+            <Button
+              title={isExporting ? 'Exportando...' : 'Exportar relatório'}
+              onPress={handleExportReport}
+            />
+          </ExportButtonWrapper>
+        </FinanceSection>
       </Content>
 
       <Modal visible={!!selectedCategory} animationType="slide">

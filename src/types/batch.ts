@@ -3,8 +3,11 @@ export type Batch = {
   productId: string;
   amount: string;
   supplier: string;
+  purchaseDate: string;
   fabricationDate: string;
   expirationDate: string;
+  costPrice?: string;
+  salePrice?: string;
   notificationId?: string;
   createdAt: string;
 };

@@ -158,3 +158,44 @@ export const ModalContent = styled.ScrollView.attrs({
 export const ModalFooter = styled.View`
   padding: 24px;
 `;
+
+export const FinanceSection = styled.View`
+  margin-top: 24px;
+  background-color: ${({theme}) => theme.colors.shape};
+  border-radius: 5px;
+  padding: 16px 18px;
+`;
+
+export const FinanceTitle = styled.Text`
+  font-family: ${({theme}) => theme.fonts.medium};
+  font-size: ${RFValue(15)}px;
+  color: ${({theme}) => theme.colors.text_dark};
+  margin-bottom: 12px;
+`;
+
+export const FinanceRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 6px 0;
+`;
+
+export const FinanceLabel = styled.Text`
+  font-family: ${({theme}) => theme.fonts.regular};
+  font-size: ${RFValue(13)}px;
+  color: ${({theme}) => theme.colors.text};
+`;
+
+export const FinanceValue = styled.Text<{tone?: 'positive' | 'negative'}>`
+  font-family: ${({theme}) => theme.fonts.medium};
+  font-size: ${RFValue(13)}px;
+  color: ${({theme, tone}) =>
+    tone === 'positive'
+      ? theme.colors.success
+      : tone === 'negative'
+        ? theme.colors.attention
+        : theme.colors.text_dark};
+`;
+
+export const ExportButtonWrapper = styled.View`
+  margin-top: 16px;
+`;

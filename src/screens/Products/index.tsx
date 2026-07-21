@@ -9,8 +9,11 @@ import {LoadError} from '@/components/LoadError';
 import {ProductListItem} from '@/components/ProductListItem';
 import {SearchInput} from '@/components/SearchInput';
 import {RootStackParamList} from '@/routes/types';
+import {batchesStorage} from '@/storage/batchesStorage';
 import {productsStorage} from '@/storage/productsStorage';
+import {Batch} from '@/types/batch';
 import {Product} from '@/types/product';
+import {getStockStatus} from '@/utils/stock';
 
 import {
   AddButton,
@@ -34,6 +37,7 @@ export function Products() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [search, setSearch] = useState('');
 
   const theme = useTheme();
@@ -45,8 +49,13 @@ export function Products() {
     setHasError(false);
 
     try {
-      const stored = await productsStorage.getAll();
-      setProducts(stored);
+      const [storedProducts, storedBatches] = await Promise.all([
+        productsStorage.getAll(),
+        batchesStorage.getAll(),
+      ]);
+
+      setProducts(storedProducts);
+      setBatches(storedBatches);
     } catch {
       setHasError(true);
     } finally {
@@ -136,6 +145,7 @@ export function Products() {
               renderItem={({item}) => (
                 <ProductListItem
                   product={item}
+                  isLowStock={getStockStatus(item, batches).isLow}
                   onPress={() =>
                     navigation.navigate('ProdutoForm', {productId: item.id})
                   }

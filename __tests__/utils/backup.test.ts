@@ -82,6 +82,7 @@ describe('importBackup', () => {
           productId: 'p1',
           amount: '5',
           supplier: 'Fornecedor X',
+          purchaseDate: '2026-01-01',
           fabricationDate: '2026-01-01',
           expirationDate: '2099-01-01',
           createdAt: '2026-01-01T00:00:00.000Z',

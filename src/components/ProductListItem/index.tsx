@@ -3,14 +3,24 @@ import React from 'react';
 import {Product} from '@/types/product';
 import {getCategory} from '@/utils/categories';
 
-import {Barcode, Container, Dot, Icon, Info, Name, NameRow} from './styles';
+import {
+  Barcode,
+  Container,
+  Dot,
+  Icon,
+  Info,
+  LowStockBadge,
+  Name,
+  NameRow,
+} from './styles';
 
 interface Props {
   product: Product;
   onPress: () => void;
+  isLowStock?: boolean;
 }
 
-export function ProductListItem({product, onPress}: Props) {
+export function ProductListItem({product, onPress, isLowStock}: Props) {
   const category = getCategory(product.category);
 
   return (
@@ -21,6 +31,7 @@ export function ProductListItem({product, onPress}: Props) {
           <Name>{product.name}</Name>
         </NameRow>
         <Barcode>{product.barcode}</Barcode>
+        {isLowStock && <LowStockBadge>Estoque baixo</LowStockBadge>}
       </Info>
 
       <Icon name="chevron-right" />

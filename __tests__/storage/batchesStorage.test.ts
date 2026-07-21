@@ -3,6 +3,7 @@ import {addDays, format} from 'date-fns';
 import * as Notifications from 'expo-notifications';
 
 import {batchesStorage} from '@/storage/batchesStorage';
+import {movementsStorage} from '@/storage/movementsStorage';
 import {BatchInput} from '@/types/batch';
 
 const futureExpiration = format(addDays(new Date(), 10), 'yyyy-MM-dd');
@@ -11,9 +12,12 @@ const baseInput: BatchInput = {
   productId: 'product-1',
   amount: '10',
   supplier: '12.345.678/0001-99',
+  purchaseDate: '2026-01-01',
   fabricationDate: '2026-01-01',
   expirationDate: futureExpiration,
 };
+
+const product = {name: 'Queijo Minas', category: 'cheese'};
 
 describe('batchesStorage', () => {
   beforeEach(async () => {
@@ -26,7 +30,7 @@ describe('batchesStorage', () => {
   });
 
   it('adds a batch and schedules a reminder notification', async () => {
-    const batch = await batchesStorage.add(baseInput, 'Queijo Minas');
+    const batch = await batchesStorage.add(baseInput, product.name);
 
     expect(typeof batch.id).toBe('string');
     expect(batch.notificationId).toEqual(expect.any(String));
@@ -48,12 +52,12 @@ describe('batchesStorage', () => {
   });
 
   it('cancels the old reminder and schedules a new one on update', async () => {
-    const batch = await batchesStorage.add(baseInput, 'Queijo Minas');
+    const batch = await batchesStorage.add(baseInput, product.name);
 
     const updated = await batchesStorage.update(
       batch.id,
       {...baseInput, amount: '20'},
-      'Queijo Minas',
+      product.name,
     );
 
     expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
@@ -63,18 +67,42 @@ describe('batchesStorage', () => {
     expect(updated.notificationId).toEqual(expect.any(String));
   });
 
-  it('cancels the reminder on remove', async () => {
-    const batch = await batchesStorage.add(baseInput, 'Queijo Minas');
+  it('cancels the reminder on remove and records a sold movement', async () => {
+    const batch = await batchesStorage.add(
+      {...baseInput, costPrice: '5', salePrice: '8'},
+      product.name,
+    );
 
-    await batchesStorage.remove(batch.id);
+    await batchesStorage.remove(batch.id, 'sold', product);
 
     expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
       batch.notificationId,
     );
     expect(await batchesStorage.getAll()).toEqual([]);
+
+    const movements = await movementsStorage.getAll();
+    expect(movements).toHaveLength(1);
+    expect(movements[0]).toMatchObject({
+      productId: 'product-1',
+      productName: product.name,
+      category: product.category,
+      type: 'sold',
+      amount: '10',
+      costPrice: '5',
+      salePrice: '8',
+    });
   });
 
-  it('removeByProductId cascades and cancels every reminder', async () => {
+  it('records a lost movement when the reason is loss', async () => {
+    const batch = await batchesStorage.add(baseInput, product.name);
+
+    await batchesStorage.remove(batch.id, 'lost', product);
+
+    const movements = await movementsStorage.getAll();
+    expect(movements[0].type).toBe('lost');
+  });
+
+  it('removeByProductId cascades and cancels every reminder without recording movements', async () => {
     const first = await batchesStorage.add(baseInput, 'Produto A');
     const second = await batchesStorage.add(baseInput, 'Produto A');
     await batchesStorage.add(
@@ -94,6 +122,8 @@ describe('batchesStorage', () => {
     const remaining = await batchesStorage.getAll();
     expect(remaining).toHaveLength(1);
     expect(remaining[0].productId).toBe('other-product');
+
+    expect(await movementsStorage.getAll()).toEqual([]);
   });
 
   it('does not schedule a reminder when the lead time has already passed', async () => {
@@ -101,7 +131,7 @@ describe('batchesStorage', () => {
 
     const batch = await batchesStorage.add(
       {...baseInput, expirationDate: soonExpiration},
-      'Queijo Minas',
+      product.name,
     );
 
     expect(batch.notificationId).toBeUndefined();
@@ -115,6 +145,7 @@ describe('batchesStorage', () => {
           productId: 'product-1',
           amount: '5',
           supplier: baseInput.supplier,
+          purchaseDate: baseInput.purchaseDate,
           fabricationDate: baseInput.fabricationDate,
           expirationDate: futureExpiration,
           notificationId: 'stale-id-from-another-device',

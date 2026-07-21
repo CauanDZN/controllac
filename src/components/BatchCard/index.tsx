@@ -61,6 +61,11 @@ export function BatchCard({batch, product, onPress, onDelete}: Props) {
           <Label>Fabricação</Label>
           <Value>{formatISODate(batch.fabricationDate)}</Value>
         </Footer>
+
+        <Footer>
+          <Label>Compra</Label>
+          <Value>{formatISODate(batch.purchaseDate)}</Value>
+        </Footer>
       </TouchableContent>
 
       <DeleteButton onPress={() => onDelete(batch.id)}>

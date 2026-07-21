@@ -14,4 +14,5 @@ export type RootStackParamList = {
   ProdutoForm:
     {productId?: string; barcode?: string; chainToLote?: boolean} | undefined;
   Backup: undefined;
+  Notifications: undefined;
 };

@@ -20,11 +20,25 @@ export const Header = styled.View<{topInset: number}>`
 
 export const HeaderInfo = styled.View``;
 
+export const HeaderActions = styled.View`
+  flex-direction: row;
+`;
+
 export const BackupButton = styled.TouchableOpacity`
   padding: 4px;
+  margin-left: 16px;
 `;
 
 export const BackupIcon = styled(Feather)`
+  font-size: ${RFValue(22)}px;
+  color: ${({theme}) => theme.colors.shape};
+`;
+
+export const NotificationsButton = styled.TouchableOpacity`
+  padding: 4px;
+`;
+
+export const NotificationsIcon = styled(Feather)`
   font-size: ${RFValue(22)}px;
   color: ${({theme}) => theme.colors.shape};
 `;

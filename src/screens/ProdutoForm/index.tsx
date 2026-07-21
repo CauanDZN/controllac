@@ -40,11 +40,13 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ProdutoForm'>;
 interface FormData {
   name: string;
   barcode: string;
+  minimumStock: string;
 }
 
 const schema = yup.object({
   name: yup.string().required('O nome é obrigatório'),
   barcode: yup.string().required('O código de barras é obrigatório'),
+  minimumStock: yup.string().default(''),
 });
 
 export function ProdutoForm({navigation, route}: Props) {
@@ -64,7 +66,7 @@ export function ProdutoForm({navigation, route}: Props) {
     formState: {errors},
   } = useForm<FormData>({
     resolver: yupResolver(schema),
-    defaultValues: {barcode: barcode ?? ''},
+    defaultValues: {barcode: barcode ?? '', minimumStock: ''},
   });
 
   useEffect(() => {
@@ -76,7 +78,12 @@ export function ProdutoForm({navigation, route}: Props) {
       const product = products.find(item => item.id === productId);
 
       if (product) {
-        reset({name: product.name, barcode: product.barcode});
+        reset({
+          name: product.name,
+          barcode: product.barcode,
+          minimumStock:
+            product.minimumStock != null ? String(product.minimumStock) : '',
+        });
         setSelectedCategory(getCategory(product.category));
       }
 
@@ -90,18 +97,21 @@ export function ProdutoForm({navigation, route}: Props) {
       return;
     }
 
+    const minimumStock = form.minimumStock.trim()
+      ? Number(form.minimumStock)
+      : undefined;
+
     try {
+      const input = {
+        name: form.name,
+        barcode: form.barcode,
+        category: selectedCategory.key,
+        minimumStock,
+      };
+
       const product = isEditing
-        ? await productsStorage.update(productId, {
-            name: form.name,
-            barcode: form.barcode,
-            category: selectedCategory.key,
-          })
-        : await productsStorage.add({
-            name: form.name,
-            barcode: form.barcode,
-            category: selectedCategory.key,
-          });
+        ? await productsStorage.update(productId, input)
+        : await productsStorage.add(input);
 
       if (chainToLote) {
         navigation.replace('LoteForm', {productId: product.id});
@@ -183,6 +193,14 @@ export function ProdutoForm({navigation, route}: Props) {
               <CategoryButton
                 category={selectedCategory}
                 onPress={() => setCategoryModalOpen(true)}
+              />
+
+              <InputForm
+                name="minimumStock"
+                control={control}
+                placeholder="Estoque mínimo (opcional)"
+                keyboardType="numeric"
+                error={errors.minimumStock?.message}
               />
             </Fields>
 

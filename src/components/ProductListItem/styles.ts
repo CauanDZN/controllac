@@ -45,6 +45,14 @@ export const Barcode = styled.Text`
   margin-left: 18px;
 `;
 
+export const LowStockBadge = styled.Text`
+  font-family: ${({theme}) => theme.fonts.medium};
+  font-size: ${RFValue(11)}px;
+  color: ${({theme}) => theme.colors.attention};
+  margin-top: 2px;
+  margin-left: 18px;
+`;
+
 export const Icon = styled(Feather)`
   font-size: ${RFValue(20)}px;
   color: ${({theme}) => theme.colors.text};

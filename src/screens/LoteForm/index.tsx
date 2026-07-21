@@ -45,13 +45,20 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LoteForm'>;
 interface FormData {
   amount: string;
   supplier: string;
+  purchaseDate: string;
   fabricationDate: string;
   expirationDate: string;
+  costPrice: string;
+  salePrice: string;
 }
 
 const schema = yup.object({
   amount: yup.string().required('A quantidade é obrigatória'),
   supplier: yup.string().required('O fornecedor é obrigatório'),
+  purchaseDate: yup
+    .string()
+    .required('A data de compra é obrigatória')
+    .test('valid-date', 'Data inválida', isValidMaskedDate),
   fabricationDate: yup
     .string()
     .required('A data de fabricação é obrigatória')
@@ -60,6 +67,8 @@ const schema = yup.object({
     .string()
     .required('A data de validade é obrigatória')
     .test('valid-date', 'Data inválida', isValidMaskedDate),
+  costPrice: yup.string().default(''),
+  salePrice: yup.string().default(''),
 });
 
 export function LoteForm({navigation, route}: Props) {
@@ -107,8 +116,11 @@ export function LoteForm({navigation, route}: Props) {
       reset({
         amount: existingBatch.amount,
         supplier: existingBatch.supplier,
+        purchaseDate: formatISODate(existingBatch.purchaseDate),
         fabricationDate: formatISODate(existingBatch.fabricationDate),
         expirationDate: formatISODate(existingBatch.expirationDate),
+        costPrice: existingBatch.costPrice ?? '',
+        salePrice: existingBatch.salePrice ?? '',
       });
     }
 
@@ -129,8 +141,11 @@ export function LoteForm({navigation, route}: Props) {
       productId: product.id,
       amount: form.amount,
       supplier: form.supplier,
+      purchaseDate: maskedDateToISO(form.purchaseDate),
       fabricationDate: maskedDateToISO(form.fabricationDate),
       expirationDate: maskedDateToISO(form.expirationDate),
+      costPrice: form.costPrice.trim() || undefined,
+      salePrice: form.salePrice.trim() || undefined,
     };
 
     try {
@@ -221,6 +236,15 @@ export function LoteForm({navigation, route}: Props) {
               />
 
               <InputForm
+                name="purchaseDate"
+                control={control}
+                placeholder="Data de Compra"
+                keyboardType="numeric"
+                isDateField
+                error={errors.purchaseDate?.message}
+              />
+
+              <InputForm
                 name="fabricationDate"
                 control={control}
                 placeholder="Data de Fabricação"
@@ -236,6 +260,22 @@ export function LoteForm({navigation, route}: Props) {
                 keyboardType="numeric"
                 isDateField
                 error={errors.expirationDate?.message}
+              />
+
+              <InputForm
+                name="costPrice"
+                control={control}
+                placeholder="Preço de custo (opcional)"
+                keyboardType="numeric"
+                error={errors.costPrice?.message}
+              />
+
+              <InputForm
+                name="salePrice"
+                control={control}
+                placeholder="Preço de venda (opcional)"
+                keyboardType="numeric"
+                error={errors.salePrice?.message}
               />
             </Fields>
 

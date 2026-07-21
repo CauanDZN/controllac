@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {ActivityIndicator, FlatList} from 'react-native';
+import {ActivityIndicator, Alert, FlatList} from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -13,8 +13,10 @@ import {RootStackParamList} from '@/routes/types';
 import {batchesStorage} from '@/storage/batchesStorage';
 import {productsStorage} from '@/storage/productsStorage';
 import {Batch} from '@/types/batch';
+import {MovementType} from '@/types/movement';
 import {Product} from '@/types/product';
 import {getExpirationStatus} from '@/utils/date';
+import {checkAndNotifyLowStock} from '@/utils/stock';
 
 import {
   BackupButton,
@@ -28,8 +30,11 @@ import {
   EmptyText,
   FiltersArea,
   Header,
+  HeaderActions,
   HeaderInfo,
   LoadContainer,
+  NotificationsButton,
+  NotificationsIcon,
   Subtitle,
   Title,
 } from './styles';
@@ -103,9 +108,31 @@ export function Lotes() {
       );
   }, [batches, productsById, search, statusFilter]);
 
-  async function handleDeleteBatch(id: string) {
-    await batchesStorage.remove(id);
-    setBatches(current => current.filter(batch => batch.id !== id));
+  function handleDeleteBatch(id: string) {
+    const item = items.find(current => current.batch.id === id);
+
+    if (!item) {
+      return;
+    }
+
+    Alert.alert('Excluir lote', 'Como esse lote foi baixado?', [
+      {text: 'Cancelar', style: 'cancel'},
+      {text: 'Vendido', onPress: () => confirmDeleteBatch(item, 'sold')},
+      {
+        text: 'Perdido/Vencido',
+        style: 'destructive',
+        onPress: () => confirmDeleteBatch(item, 'lost'),
+      },
+    ]);
+  }
+
+  async function confirmDeleteBatch(item: BatchListItem, type: MovementType) {
+    await batchesStorage.remove(item.batch.id, type, {
+      name: item.product.name,
+      category: item.product.category,
+    });
+    setBatches(current => current.filter(batch => batch.id !== item.batch.id));
+    await checkAndNotifyLowStock(item.product.id);
   }
 
   function handleEditBatch(batchId: string) {
@@ -141,9 +168,16 @@ export function Lotes() {
           <Subtitle>{getSubtitle()}</Subtitle>
         </HeaderInfo>
 
-        <BackupButton onPress={() => navigation.navigate('Backup')}>
-          <BackupIcon name="shield" />
-        </BackupButton>
+        <HeaderActions>
+          <NotificationsButton
+            onPress={() => navigation.navigate('Notifications')}>
+            <NotificationsIcon name="bell" />
+          </NotificationsButton>
+
+          <BackupButton onPress={() => navigation.navigate('Backup')}>
+            <BackupIcon name="shield" />
+          </BackupButton>
+        </HeaderActions>
       </Header>
 
       {hasError ? (

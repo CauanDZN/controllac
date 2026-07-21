@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 
+import {movementsStorage} from '@/storage/movementsStorage';
 import {Batch, BatchInput} from '@/types/batch';
+import {MovementType} from '@/types/movement';
 import {
   cancelReminder,
   scheduleExpirationReminder,
@@ -69,9 +71,30 @@ async function update(
   return updated;
 }
 
-async function remove(id: string): Promise<void> {
+interface RemovedBatchProduct {
+  name: string;
+  category: string;
+}
+
+async function remove(
+  id: string,
+  type: MovementType,
+  product: RemovedBatchProduct,
+): Promise<void> {
   const batches = await getAll();
   const existing = batches.find(batch => batch.id === id);
+
+  if (existing) {
+    await movementsStorage.add({
+      productId: existing.productId,
+      productName: product.name,
+      category: product.category,
+      type,
+      amount: existing.amount,
+      costPrice: existing.costPrice,
+      salePrice: existing.salePrice,
+    });
+  }
 
   await cancelReminder(existing?.notificationId);
   await persist(batches.filter(batch => batch.id !== id));

@@ -4,6 +4,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 import {Backup} from '@/screens/Backup';
 import {LoteForm} from '@/screens/LoteForm';
+import {Notifications} from '@/screens/Notifications';
 import {ProdutoForm} from '@/screens/ProdutoForm';
 
 import {AppRoutes} from './app.routes';
@@ -29,6 +30,11 @@ export function Routes() {
         <Stack.Screen
           name="Backup"
           component={Backup}
+          options={{presentation: 'modal'}}
+        />
+        <Stack.Screen
+          name="Notifications"
+          component={Notifications}
           options={{presentation: 'modal'}}
         />
       </Stack.Navigator>
