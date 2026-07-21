@@ -33,7 +33,14 @@
           "cameraPermission": "O Controllac usa a câmera para ler o código de barras dos produtos."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/logo.png",
+          "color": "#320059"
+        }
+      ]
     ],
     "extra": {
       "eas": {

@@ -1,12 +1,14 @@
 import React, {useState} from 'react';
 import {Alert} from 'react-native';
-import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {BarcodeType, CameraView, useCameraPermissions} from 'expo-camera';
 import * as Clipboard from 'expo-clipboard';
 import {useAudioPlayer} from 'expo-audio';
 
 import {Button} from '@/components/Button';
-import {AppTabParamList} from '@/routes/types';
+import {RootStackParamList} from '@/routes/types';
+import {productsStorage} from '@/storage/productsStorage';
 
 import {
   ActionsStack,
@@ -30,13 +32,13 @@ const BARCODE_TYPES: BarcodeType[] = [
   'qr',
 ];
 
-type Props = BottomTabScreenProps<AppTabParamList, 'Scanner'>;
-
-export function Scanner({navigation}: Props) {
+export function Scanner() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedCode, setScannedCode] = useState<string>();
 
   const beepPlayer = useAudioPlayer(require('../../assets/scanner_bip.mp3'));
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   function handleBarcodeScanned({data}: {data: string}) {
     setScannedCode(data);
@@ -56,12 +58,22 @@ export function Scanner({navigation}: Props) {
     );
   }
 
-  function handleRegisterProduct() {
+  async function handleContinue() {
     if (!scannedCode) {
       return;
     }
 
-    navigation.navigate('Cadastrar', {barcode: scannedCode});
+    const existingProduct = await productsStorage.findByBarcode(scannedCode);
+
+    if (existingProduct) {
+      navigation.navigate('LoteForm', {productId: existingProduct.id});
+    } else {
+      navigation.navigate('ProdutoForm', {
+        barcode: scannedCode,
+        chainToLote: true,
+      });
+    }
+
     setScannedCode(undefined);
   }
 
@@ -116,7 +128,7 @@ export function Scanner({navigation}: Props) {
           <ScannedCode>{scannedCode}</ScannedCode>
 
           <ActionsStack>
-            <Button title="Cadastrar produto" onPress={handleRegisterProduct} />
+            <Button title="Continuar cadastro" onPress={handleContinue} />
             <Button title="Copiar código" onPress={handleCopyToClipboard} />
             <Button
               title="Escanear novamente"

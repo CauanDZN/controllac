@@ -1,5 +1,6 @@
 import styled from 'styled-components/native';
-import {RFValue} from 'react-native-responsive-fontsize';
+import {Feather} from '@expo/vector-icons';
+import {RFPercentage, RFValue} from 'react-native-responsive-fontsize';
 
 export const Container = styled.View`
   flex: 1;
@@ -23,12 +24,60 @@ export const Title = styled.Text`
   color: ${({theme}) => theme.colors.shape};
 `;
 
-export const Form = styled.View`
+export const Content = styled.View`
   flex: 1;
-  justify-content: space-between;
-  width: 100%;
-
-  padding: 24px;
+  padding: ${RFPercentage(4)}px 24px 0;
 `;
 
-export const Fields = styled.View``;
+export const NewProductButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  background-color: ${({theme}) => theme.colors.secondary};
+  border-radius: 5px;
+  padding: 16px;
+
+  margin-bottom: 24px;
+`;
+
+export const NewProductIcon = styled(Feather)`
+  font-size: ${RFValue(18)}px;
+  color: ${({theme}) => theme.colors.shape};
+  margin-right: 8px;
+`;
+
+export const NewProductText = styled.Text`
+  font-family: ${({theme}) => theme.fonts.medium};
+  font-size: ${RFValue(14)}px;
+  color: ${({theme}) => theme.colors.shape};
+`;
+
+export const SectionLabel = styled.Text`
+  font-family: ${({theme}) => theme.fonts.regular};
+  font-size: ${RFValue(13)}px;
+  color: ${({theme}) => theme.colors.text};
+  margin-bottom: 12px;
+`;
+
+export const listStyle = {
+  flex: 1,
+};
+
+export const listContentContainerStyle = {
+  paddingBottom: 24,
+};
+
+export const LoadContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const EmptyText = styled.Text`
+  font-family: ${({theme}) => theme.fonts.regular};
+  font-size: ${RFValue(14)}px;
+  color: ${({theme}) => theme.colors.text};
+  text-align: center;
+  margin-top: 24px;
+`;

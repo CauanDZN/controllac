@@ -19,6 +19,8 @@ export const Container = styled.View<{status: ExpirationStatus}>`
   margin-bottom: 16px;
 `;
 
+export const TouchableContent = styled.TouchableOpacity``;
+
 export const Header = styled.View`
   flex-direction: row;
   justify-content: space-between;
@@ -69,7 +71,7 @@ export const Value = styled.Text`
 `;
 
 export const DeleteButton = styled.TouchableOpacity`
-  margin-top: 4px;
+  margin-top: 12px;
 `;
 
 export const DeleteText = styled.Text`

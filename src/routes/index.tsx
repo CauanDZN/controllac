@@ -1,12 +1,31 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+
+import {LoteForm} from '@/screens/LoteForm';
+import {ProdutoForm} from '@/screens/ProdutoForm';
 
 import {AppRoutes} from './app.routes';
+import {RootStackParamList} from './types';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function Routes() {
   return (
     <NavigationContainer>
-      <AppRoutes />
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Tabs" component={AppRoutes} />
+        <Stack.Screen
+          name="LoteForm"
+          component={LoteForm}
+          options={{presentation: 'modal'}}
+        />
+        <Stack.Screen
+          name="ProdutoForm"
+          component={ProdutoForm}
+          options={{presentation: 'modal'}}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

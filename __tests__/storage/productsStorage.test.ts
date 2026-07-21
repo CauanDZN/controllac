@@ -7,10 +7,6 @@ const baseInput: ProductInput = {
   name: 'Queijo Minas',
   barcode: '7891000100103',
   category: 'cheese',
-  amount: '10',
-  supplier: '12.345.678/0001-99',
-  fabricationDate: '2026-01-01',
-  expirationDate: '2026-06-01',
 };
 
 describe('productsStorage', () => {
@@ -67,5 +63,41 @@ describe('productsStorage', () => {
     const all = await productsStorage.getAll();
     expect(all).toHaveLength(1);
     expect(all[0].id).toBe(second.id);
+  });
+
+  it('updates an existing product in place', async () => {
+    const product = await productsStorage.add(baseInput);
+
+    const updated = await productsStorage.update(product.id, {
+      ...baseInput,
+      name: 'Queijo Minas Padrão',
+    });
+
+    expect(updated.id).toBe(product.id);
+    expect(updated.name).toBe('Queijo Minas Padrão');
+    expect(updated.createdAt).toBe(product.createdAt);
+
+    const all = await productsStorage.getAll();
+    expect(all).toHaveLength(1);
+    expect(all[0].name).toBe('Queijo Minas Padrão');
+  });
+
+  it('finds a product by barcode', async () => {
+    const product = await productsStorage.add(baseInput);
+    await productsStorage.add({
+      ...baseInput,
+      name: 'Outro produto',
+      barcode: '0000000000000',
+    });
+
+    const found = await productsStorage.findByBarcode(baseInput.barcode);
+    expect(found?.id).toBe(product.id);
+  });
+
+  it('returns undefined when no product matches the barcode', async () => {
+    await productsStorage.add(baseInput);
+
+    const found = await productsStorage.findByBarcode('does-not-exist');
+    expect(found).toBeUndefined();
   });
 });

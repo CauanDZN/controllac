@@ -1,15 +1,19 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {ActivityIndicator, Modal} from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {addMonths, format, isSameMonth, parseISO, subMonths} from 'date-fns';
 import {ptBR} from 'date-fns/locale';
 import {PieChart} from 'react-native-gifted-charts';
 import {useTheme} from 'styled-components/native';
 
+import {BatchCard} from '@/components/BatchCard';
 import {Button} from '@/components/Button';
-import {ProductCard} from '@/components/ProductCard';
+import {RootStackParamList} from '@/routes/types';
+import {batchesStorage} from '@/storage/batchesStorage';
 import {productsStorage} from '@/storage/productsStorage';
+import {Batch} from '@/types/batch';
 import {Product} from '@/types/product';
 import {Category, categories} from '@/utils/categories';
 
@@ -42,27 +46,38 @@ import {
   Title,
 } from './styles';
 
-type CategorySummary = Category & {products: Product[]};
+type BatchListItem = {
+  batch: Batch;
+  product: Product;
+};
+
+type CategorySummary = Category & {items: BatchListItem[]};
 
 export function Resume() {
   const [isLoading, setIsLoading] = useState(true);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>();
 
   const theme = useTheme();
   const bottomTabBarHeight = useBottomTabBarHeight();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
 
-      productsStorage.getAll().then(products => {
-        if (active) {
-          setAllProducts(products);
-          setIsLoading(false);
-        }
-      });
+      Promise.all([productsStorage.getAll(), batchesStorage.getAll()]).then(
+        ([storedProducts, storedBatches]) => {
+          if (active) {
+            setProducts(storedProducts);
+            setBatches(storedBatches);
+            setIsLoading(false);
+          }
+        },
+      );
 
       return () => {
         active = false;
@@ -76,50 +91,61 @@ export function Resume() {
     );
   }
 
-  async function handleDeleteProduct(id: string) {
-    await productsStorage.remove(id);
-    setAllProducts(current => current.filter(product => product.id !== id));
+  async function handleDeleteBatch(id: string) {
+    await batchesStorage.remove(id);
+    setBatches(current => current.filter(batch => batch.id !== id));
   }
 
-  const productsInMonth = useMemo(
+  function handleEditBatch(batchId: string) {
+    setSelectedCategoryKey(undefined);
+    navigation.navigate('LoteForm', {batchId});
+  }
+
+  const productsById = useMemo(
+    () => new Map(products.map(product => [product.id, product])),
+    [products],
+  );
+
+  const itemsInMonth = useMemo<BatchListItem[]>(
     () =>
-      allProducts.filter(product =>
-        isSameMonth(parseISO(product.createdAt), selectedDate),
-      ),
-    [allProducts, selectedDate],
+      batches
+        .filter(batch => isSameMonth(parseISO(batch.createdAt), selectedDate))
+        .map(batch => ({batch, product: productsById.get(batch.productId)}))
+        .filter((item): item is BatchListItem => !!item.product),
+    [batches, productsById, selectedDate],
   );
 
   const categoriesSummary = useMemo<CategorySummary[]>(
     () =>
       categories.map(category => ({
         ...category,
-        products: productsInMonth.filter(
-          product => product.category === category.key,
+        items: itemsInMonth.filter(
+          item => item.product.category === category.key,
         ),
       })),
-    [productsInMonth],
+    [itemsInMonth],
   );
 
-  const categoriesWithProducts = useMemo(
-    () => categoriesSummary.filter(category => category.products.length > 0),
+  const categoriesWithItems = useMemo(
+    () => categoriesSummary.filter(category => category.items.length > 0),
     [categoriesSummary],
   );
 
   const maxCount = useMemo(
     () =>
-      categoriesWithProducts.reduce(
-        (max, category) => Math.max(max, category.products.length),
+      categoriesWithItems.reduce(
+        (max, category) => Math.max(max, category.items.length),
         0,
       ),
-    [categoriesWithProducts],
+    [categoriesWithItems],
   );
 
   const topCategories = useMemo(
     () =>
-      categoriesWithProducts.filter(
-        category => category.products.length === maxCount,
+      categoriesWithItems.filter(
+        category => category.items.length === maxCount,
       ),
-    [categoriesWithProducts, maxCount],
+    [categoriesWithItems, maxCount],
   );
 
   const selectedCategory = categoriesSummary.find(
@@ -163,12 +189,12 @@ export function Resume() {
           </MonthSelectButton>
         </MonthSelect>
 
-        {productsInMonth.length > 0 ? (
+        {itemsInMonth.length > 0 ? (
           <>
             <ChartContainer>
               <PieChart
-                data={categoriesWithProducts.map(category => ({
-                  value: category.products.length,
+                data={categoriesWithItems.map(category => ({
+                  value: category.items.length,
                   color: category.color,
                   text: category.name,
                 }))}
@@ -180,24 +206,22 @@ export function Resume() {
                 textSize={12}
                 centerLabelComponent={() => (
                   <CenterLabel>
-                    <CenterLabelValue>
-                      {productsInMonth.length}
-                    </CenterLabelValue>
-                    <CenterLabelText>produtos</CenterLabelText>
+                    <CenterLabelValue>{itemsInMonth.length}</CenterLabelValue>
+                    <CenterLabelText>lotes</CenterLabelText>
                   </CenterLabel>
                 )}
               />
 
               <HighlightText>
                 {topCategories.length > 1
-                  ? 'Categorias com mais registros: '
-                  : 'Categoria com mais registros: '}
+                  ? 'Categorias com mais lotes: '
+                  : 'Categoria com mais lotes: '}
                 {topCategories.map(category => category.name).join(', ')}
               </HighlightText>
             </ChartContainer>
 
             <CategoryList>
-              {categoriesWithProducts.map(category => (
+              {categoriesWithItems.map(category => (
                 <CategoryRow
                   key={category.key}
                   onPress={() => setSelectedCategoryKey(category.key)}>
@@ -206,13 +230,13 @@ export function Resume() {
                     <CategoryName>{category.name}</CategoryName>
                   </CategoryInfo>
 
-                  <CategoryCount>{category.products.length}</CategoryCount>
+                  <CategoryCount>{category.items.length}</CategoryCount>
                 </CategoryRow>
               ))}
             </CategoryList>
           </>
         ) : (
-          <EmptyText>Nenhum produto cadastrado neste mês.</EmptyText>
+          <EmptyText>Nenhum lote cadastrado neste mês.</EmptyText>
         )}
       </Content>
 
@@ -223,11 +247,13 @@ export function Resume() {
           </ModalHeader>
 
           <ModalContent>
-            {selectedCategory?.products.map(product => (
-              <ProductCard
-                key={product.id}
-                data={product}
-                onDelete={handleDeleteProduct}
+            {selectedCategory?.items.map(({batch, product}) => (
+              <BatchCard
+                key={batch.id}
+                batch={batch}
+                product={product}
+                onPress={() => handleEditBatch(batch.id)}
+                onDelete={handleDeleteBatch}
               />
             ))}
           </ModalContent>

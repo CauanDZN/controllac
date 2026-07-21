@@ -5,10 +5,6 @@ export type Product = {
   name: string;
   barcode: string;
   category: CategoryKey;
-  amount: string;
-  supplier: string;
-  fabricationDate: string;
-  expirationDate: string;
   createdAt: string;
 };
 

@@ -27,13 +27,16 @@ export const Subtitle = styled.Text`
   margin-top: 4px;
 `;
 
-export const productListStyle = {
+export const FiltersArea = styled.View`
+  padding: ${RFPercentage(4)}px 24px 0;
+`;
+
+export const batchListStyle = {
   flex: 1,
 };
 
-export const productListContentContainerStyle = {
+export const batchListContentContainerStyle = {
   paddingHorizontal: 24,
-  paddingTop: RFPercentage(4),
 };
 
 export const LoadContainer = styled.View`
@@ -47,7 +50,6 @@ export const EmptyContainer = styled.View`
   justify-content: center;
   align-items: center;
   padding: 32px;
-  margin-top: -${RFPercentage(10)}px;
 `;
 
 export const EmptyIcon = styled(MaterialCommunityIcons)`

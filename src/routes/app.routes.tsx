@@ -4,7 +4,8 @@ import {MaterialIcons} from '@expo/vector-icons';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useTheme} from 'styled-components';
 
-import {Home} from '@/screens/Home';
+import {Lotes} from '@/screens/Lotes';
+import {Products} from '@/screens/Products';
 import {Register} from '@/screens/Register';
 import {Resume} from '@/screens/Resume';
 import {Scanner} from '@/screens/Scanner';
@@ -28,8 +29,8 @@ export function AppRoutes() {
         },
       }}>
       <Screen
-        name="Listagem"
-        component={Home}
+        name="Lotes"
+        component={Lotes}
         options={{
           tabBarIcon: ({size, color}) => (
             <MaterialIcons
@@ -37,6 +38,16 @@ export function AppRoutes() {
               size={size}
               color={color}
             />
+          ),
+        }}
+      />
+
+      <Screen
+        name="Produtos"
+        component={Products}
+        options={{
+          tabBarIcon: ({size, color}) => (
+            <MaterialIcons name="inventory" size={size} color={color} />
           ),
         }}
       />

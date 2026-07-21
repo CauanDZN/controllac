@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import {Routes} from './src/routes';
 import theme from './src/global/styles/theme';
+import {ensureAndroidChannel} from './src/utils/notifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,6 +28,10 @@ export default function App() {
   useEffect(() => {
     onLayoutRootView();
   }, [onLayoutRootView]);
+
+  useEffect(() => {
+    ensureAndroidChannel();
+  }, []);
 
   if (!fontsLoaded) {
     return null;

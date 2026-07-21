@@ -1,179 +1,115 @@
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  Keyboard,
-  Modal,
-  ScrollView,
-  TouchableWithoutFeedback,
-} from 'react-native';
-import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
-import {yupResolver} from '@hookform/resolvers/yup';
-import {useForm} from 'react-hook-form';
-import * as yup from 'yup';
+import React, {useCallback, useMemo, useState} from 'react';
+import {ActivityIndicator, FlatList} from 'react-native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useTheme} from 'styled-components';
 
-import {Button} from '@/components/Button';
-import {CategoryButton} from '@/components/CategoryButton';
-import {InputForm} from '@/components/InputForm';
-import {AppTabParamList} from '@/routes/types';
+import {ProductListItem} from '@/components/ProductListItem';
+import {SearchInput} from '@/components/SearchInput';
+import {RootStackParamList} from '@/routes/types';
 import {productsStorage} from '@/storage/productsStorage';
-import {Category} from '@/utils/categories';
-import {isValidMaskedDate, maskedDateToISO} from '@/utils/date';
+import {Product} from '@/types/product';
 
-import {CategorySelect} from '../CategorySelect';
-import {Container, Fields, Form, Header, Title} from './styles';
+import {
+  Container,
+  Content,
+  EmptyText,
+  Header,
+  listContentContainerStyle,
+  listStyle,
+  LoadContainer,
+  NewProductButton,
+  NewProductIcon,
+  NewProductText,
+  SectionLabel,
+  Title,
+} from './styles';
 
-type Props = BottomTabScreenProps<AppTabParamList, 'Cadastrar'>;
+export function Register() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState('');
 
-interface FormData {
-  name: string;
-  barcode: string;
-  fabricationDate: string;
-  expirationDate: string;
-  amount: string;
-  supplier: string;
-}
+  const theme = useTheme();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-const schema = yup.object({
-  barcode: yup.string().required('O código de barras é obrigatório'),
-  name: yup.string().required('O nome é obrigatório'),
-  fabricationDate: yup
-    .string()
-    .required('A data de fabricação é obrigatória')
-    .test('valid-date', 'Data inválida', isValidMaskedDate),
-  expirationDate: yup
-    .string()
-    .required('A data de validade é obrigatória')
-    .test('valid-date', 'Data inválida', isValidMaskedDate),
-  amount: yup.string().required('A quantidade é obrigatória'),
-  supplier: yup.string().required('O fornecedor é obrigatório'),
-});
+  const loadProducts = useCallback(async () => {
+    const stored = await productsStorage.getAll();
+    setProducts(stored);
+    setIsLoading(false);
+  }, []);
 
-export function Register({navigation, route}: Props) {
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category>();
+  useFocusEffect(
+    useCallback(() => {
+      loadProducts();
+    }, [loadProducts]),
+  );
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: {errors},
-  } = useForm<FormData>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      barcode: route.params?.barcode ?? '',
-    },
-  });
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-  useEffect(() => {
-    if (route.params?.barcode) {
-      setValue('barcode', route.params.barcode);
-    }
-  }, [route.params?.barcode, setValue]);
-
-  async function handleRegister(form: FormData) {
-    if (!selectedCategory) {
-      Alert.alert('Selecione a categoria!');
-      return;
-    }
-
-    try {
-      await productsStorage.add({
-        name: form.name,
-        barcode: form.barcode,
-        category: selectedCategory.key,
-        amount: form.amount,
-        supplier: form.supplier,
-        fabricationDate: maskedDateToISO(form.fabricationDate),
-        expirationDate: maskedDateToISO(form.expirationDate),
-      });
-
-      reset({barcode: ''});
-      setSelectedCategory(undefined);
-
-      navigation.navigate('Listagem');
-    } catch {
-      Alert.alert('Não foi possível salvar o produto');
-    }
-  }
+    return products
+      .filter(
+        product =>
+          !query ||
+          product.name.toLowerCase().includes(query) ||
+          product.barcode.includes(query),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [products, search]);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Container>
-        <Header>
-          <Title>Cadastro</Title>
-        </Header>
+    <Container>
+      <Header>
+        <Title>Cadastrar lote</Title>
+      </Header>
 
-        <ScrollView>
-          <Form>
-            <Fields>
-              <InputForm
-                name="barcode"
-                control={control}
-                placeholder="Código de Barras"
-                keyboardType="numeric"
-                error={errors.barcode?.message}
+      <Content>
+        <NewProductButton
+          onPress={() =>
+            navigation.navigate('ProdutoForm', {chainToLote: true})
+          }>
+          <NewProductIcon name="plus-circle" />
+          <NewProductText>Cadastrar novo produto</NewProductText>
+        </NewProductButton>
+
+        <SectionLabel>ou escolha um produto já cadastrado</SectionLabel>
+
+        <SearchInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Buscar por nome ou código de barras"
+        />
+
+        {isLoading ? (
+          <LoadContainer>
+            <ActivityIndicator color={theme.colors.primary} size="large" />
+          </LoadContainer>
+        ) : filtered.length === 0 ? (
+          <EmptyText>
+            {products.length === 0
+              ? 'Nenhum produto cadastrado ainda'
+              : 'Nenhum produto encontrado para essa busca'}
+          </EmptyText>
+        ) : (
+          <FlatList
+            data={filtered}
+            style={listStyle}
+            contentContainerStyle={listContentContainerStyle}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => (
+              <ProductListItem
+                product={item}
+                onPress={() =>
+                  navigation.navigate('LoteForm', {productId: item.id})
+                }
               />
-
-              <InputForm
-                name="name"
-                control={control}
-                placeholder="Nome"
-                autoCorrect={false}
-                error={errors.name?.message}
-              />
-
-              <InputForm
-                name="fabricationDate"
-                control={control}
-                placeholder="Data de Fabricação"
-                keyboardType="numeric"
-                isDateField
-                error={errors.fabricationDate?.message}
-              />
-
-              <InputForm
-                name="expirationDate"
-                control={control}
-                placeholder="Data de Validade"
-                keyboardType="numeric"
-                isDateField
-                error={errors.expirationDate?.message}
-              />
-
-              <InputForm
-                name="amount"
-                control={control}
-                placeholder="Quantidade"
-                keyboardType="numeric"
-                error={errors.amount?.message}
-              />
-
-              <InputForm
-                name="supplier"
-                control={control}
-                placeholder="Fornecedor"
-                error={errors.supplier?.message}
-              />
-
-              <CategoryButton
-                category={selectedCategory}
-                onPress={() => setCategoryModalOpen(true)}
-              />
-            </Fields>
-
-            <Button title="Salvar" onPress={handleSubmit(handleRegister)} />
-          </Form>
-        </ScrollView>
-
-        <Modal visible={categoryModalOpen}>
-          <CategorySelect
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            onClose={() => setCategoryModalOpen(false)}
+            )}
           />
-        </Modal>
-      </Container>
-    </TouchableWithoutFeedback>
+        )}
+      </Content>
+    </Container>
   );
 }

@@ -12,4 +12,10 @@ module.exports = [
       'import/no-named-as-default': 'off',
     },
   },
+  {
+    files: ['__mocks__/**/*.js'],
+    languageOptions: {
+      globals: {jest: 'readonly'},
+    },
+  },
 ];
