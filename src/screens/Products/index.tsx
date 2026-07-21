@@ -5,6 +5,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from 'styled-components';
 
+import {LoadError} from '@/components/LoadError';
 import {ProductListItem} from '@/components/ProductListItem';
 import {SearchInput} from '@/components/SearchInput';
 import {RootStackParamList} from '@/routes/types';
@@ -31,6 +32,7 @@ import {
 
 export function Products() {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
 
@@ -40,9 +42,16 @@ export function Products() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const loadProducts = useCallback(async () => {
-    const stored = await productsStorage.getAll();
-    setProducts(stored);
-    setIsLoading(false);
+    setHasError(false);
+
+    try {
+      const stored = await productsStorage.getAll();
+      setProducts(stored);
+    } catch {
+      setHasError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -91,7 +100,9 @@ export function Products() {
         </AddButton>
       </Header>
 
-      {products.length === 0 ? (
+      {hasError ? (
+        <LoadError onRetry={loadProducts} />
+      ) : products.length === 0 ? (
         <EmptyContainer>
           <EmptyIcon name="tag-outline" />
           <EmptyText>Nenhum produto cadastrado ainda</EmptyText>

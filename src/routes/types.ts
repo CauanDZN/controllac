@@ -13,4 +13,5 @@ export type RootStackParamList = {
   LoteForm: {batchId?: string; productId?: string} | undefined;
   ProdutoForm:
     {productId?: string; barcode?: string; chainToLote?: boolean} | undefined;
+  Backup: undefined;
 };

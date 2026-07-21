@@ -40,7 +40,8 @@
           "icon": "./src/assets/logo.png",
           "color": "#320059"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "extra": {
       "eas": {

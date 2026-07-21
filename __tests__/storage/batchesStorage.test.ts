@@ -106,4 +106,37 @@ describe('batchesStorage', () => {
 
     expect(batch.notificationId).toBeUndefined();
   });
+
+  describe('restore', () => {
+    it('reschedules a fresh reminder for each imported batch', async () => {
+      const imported = [
+        {
+          id: 'imported-1',
+          productId: 'product-1',
+          amount: '5',
+          supplier: baseInput.supplier,
+          fabricationDate: baseInput.fabricationDate,
+          expirationDate: futureExpiration,
+          notificationId: 'stale-id-from-another-device',
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+      ];
+
+      await batchesStorage.restore(imported, () => 'Queijo Minas');
+
+      const all = await batchesStorage.getAll();
+      expect(all).toHaveLength(1);
+      expect(all[0].id).toBe('imported-1');
+      expect(all[0].notificationId).toEqual(expect.any(String));
+      expect(all[0].notificationId).not.toBe('stale-id-from-another-device');
+    });
+
+    it('replaces the whole batch list', async () => {
+      await batchesStorage.add(baseInput, 'Produto existente');
+
+      await batchesStorage.restore([], () => 'Produto');
+
+      expect(await batchesStorage.getAll()).toEqual([]);
+    });
+  });
 });

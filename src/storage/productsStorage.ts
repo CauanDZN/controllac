@@ -55,10 +55,15 @@ async function remove(id: string): Promise<void> {
   await persist(products.filter(product => product.id !== id));
 }
 
+async function restore(products: Product[]): Promise<void> {
+  await persist(products);
+}
+
 export const productsStorage = {
   getAll,
   findByBarcode,
   add,
   update,
   remove,
+  restore,
 };

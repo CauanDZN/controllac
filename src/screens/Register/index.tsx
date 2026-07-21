@@ -4,6 +4,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useTheme} from 'styled-components';
 
+import {LoadError} from '@/components/LoadError';
 import {ProductListItem} from '@/components/ProductListItem';
 import {SearchInput} from '@/components/SearchInput';
 import {RootStackParamList} from '@/routes/types';
@@ -27,6 +28,7 @@ import {
 
 export function Register() {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
 
@@ -35,9 +37,16 @@ export function Register() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const loadProducts = useCallback(async () => {
-    const stored = await productsStorage.getAll();
-    setProducts(stored);
-    setIsLoading(false);
+    setHasError(false);
+
+    try {
+      const stored = await productsStorage.getAll();
+      setProducts(stored);
+    } catch {
+      setHasError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -86,6 +95,8 @@ export function Register() {
           <LoadContainer>
             <ActivityIndicator color={theme.colors.primary} size="large" />
           </LoadContainer>
+        ) : hasError ? (
+          <LoadError onRetry={loadProducts} />
         ) : filtered.length === 0 ? (
           <EmptyText>
             {products.length === 0

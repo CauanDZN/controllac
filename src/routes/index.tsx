@@ -2,6 +2,7 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
+import {Backup} from '@/screens/Backup';
 import {LoteForm} from '@/screens/LoteForm';
 import {ProdutoForm} from '@/screens/ProdutoForm';
 
@@ -23,6 +24,11 @@ export function Routes() {
         <Stack.Screen
           name="ProdutoForm"
           component={ProdutoForm}
+          options={{presentation: 'modal'}}
+        />
+        <Stack.Screen
+          name="Backup"
+          component={Backup}
           options={{presentation: 'modal'}}
         />
       </Stack.Navigator>

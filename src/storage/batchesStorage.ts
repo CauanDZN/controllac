@@ -87,6 +87,24 @@ async function removeByProductId(productId: string): Promise<void> {
   await persist(batches.filter(batch => batch.productId !== productId));
 }
 
+async function restore(
+  batches: Batch[],
+  getProductName: (productId: string) => string,
+): Promise<void> {
+  const restored: Batch[] = [];
+
+  for (const batch of batches) {
+    const notificationId = await scheduleExpirationReminder({
+      productName: getProductName(batch.productId),
+      expirationDateISO: batch.expirationDate,
+    });
+
+    restored.push({...batch, notificationId});
+  }
+
+  await persist(restored);
+}
+
 export const batchesStorage = {
   getAll,
   getByProductId,
@@ -94,4 +112,5 @@ export const batchesStorage = {
   update,
   remove,
   removeByProductId,
+  restore,
 };

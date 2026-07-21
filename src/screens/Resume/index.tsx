@@ -10,6 +10,7 @@ import {useTheme} from 'styled-components/native';
 
 import {BatchCard} from '@/components/BatchCard';
 import {Button} from '@/components/Button';
+import {LoadError} from '@/components/LoadError';
 import {RootStackParamList} from '@/routes/types';
 import {batchesStorage} from '@/storage/batchesStorage';
 import {productsStorage} from '@/storage/productsStorage';
@@ -55,6 +56,7 @@ type CategorySummary = Category & {items: BatchListItem[]};
 
 export function Resume() {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -65,25 +67,35 @@ export function Resume() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
+  const loadData = useCallback(() => {
+    let active = true;
 
-      Promise.all([productsStorage.getAll(), batchesStorage.getAll()]).then(
-        ([storedProducts, storedBatches]) => {
-          if (active) {
-            setProducts(storedProducts);
-            setBatches(storedBatches);
-            setIsLoading(false);
-          }
-        },
-      );
+    setHasError(false);
 
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
+    Promise.all([productsStorage.getAll(), batchesStorage.getAll()])
+      .then(([storedProducts, storedBatches]) => {
+        if (active) {
+          setProducts(storedProducts);
+          setBatches(storedBatches);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHasError(true);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useFocusEffect(loadData);
 
   function handleDateChange(action: 'next' | 'prev') {
     setSelectedDate(current =>
@@ -161,6 +173,17 @@ export function Resume() {
         <LoadContainer>
           <ActivityIndicator color={theme.colors.primary} size="large" />
         </LoadContainer>
+      </Container>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <Container>
+        <Header>
+          <Title>Resumo por categoria</Title>
+        </Header>
+        <LoadError onRetry={loadData} />
       </Container>
     );
   }

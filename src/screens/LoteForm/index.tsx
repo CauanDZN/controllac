@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {yupResolver} from '@hookform/resolvers/yup';
+import * as Notifications from 'expo-notifications';
 import {useForm} from 'react-hook-form';
 import {useTheme} from 'styled-components';
 import * as yup from 'yup';
@@ -17,6 +18,7 @@ import {InputForm} from '@/components/InputForm';
 import {RootStackParamList} from '@/routes/types';
 import {batchesStorage} from '@/storage/batchesStorage';
 import {productsStorage} from '@/storage/productsStorage';
+import {settingsStorage} from '@/storage/settingsStorage';
 import {Batch} from '@/types/batch';
 import {Product} from '@/types/product';
 import {getCategory} from '@/utils/categories';
@@ -138,10 +140,33 @@ export function LoteForm({navigation, route}: Props) {
         await batchesStorage.add(input, product.name);
       }
 
+      await warnIfNotificationsDisabled();
+
       navigation.navigate('Tabs', {screen: 'Lotes'});
     } catch {
       Alert.alert('Não foi possível salvar o lote');
     }
+  }
+
+  async function warnIfNotificationsDisabled() {
+    const alreadyWarned =
+      await settingsStorage.hasWarnedNotificationsDisabled();
+
+    if (alreadyWarned) {
+      return;
+    }
+
+    const {granted} = await Notifications.getPermissionsAsync();
+
+    if (granted) {
+      return;
+    }
+
+    await settingsStorage.markWarnedNotificationsDisabled();
+    Alert.alert(
+      'Lote salvo',
+      'As notificações estão desativadas neste aparelho — ative-as nas configurações pra receber avisos de vencimento.',
+    );
   }
 
   if (isLoading || !product) {

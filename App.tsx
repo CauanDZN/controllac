@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
@@ -7,6 +7,8 @@ import {useFonts} from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
 import {Routes} from './src/routes';
+import {Onboarding} from './src/screens/Onboarding';
+import {settingsStorage} from './src/storage/settingsStorage';
 import theme from './src/global/styles/theme';
 import {ensureAndroidChannel} from './src/utils/notifications';
 
@@ -18,6 +20,8 @@ export default function App() {
     'Inter-Medium': require('./src/assets/fonts/Inter-Medium.ttf'),
     'Inter-Bold': require('./src/assets/fonts/Inter-Bold.ttf'),
   });
+
+  const [showOnboarding, setShowOnboarding] = useState<boolean>();
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -33,7 +37,11 @@ export default function App() {
     ensureAndroidChannel();
   }, []);
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    settingsStorage.hasSeenOnboarding().then(seen => setShowOnboarding(!seen));
+  }, []);
+
+  if (!fontsLoaded || showOnboarding === undefined) {
     return null;
   }
 
@@ -42,7 +50,11 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider theme={theme}>
           <StatusBar style="light" />
-          <Routes />
+          {showOnboarding ? (
+            <Onboarding onFinish={() => setShowOnboarding(false)} />
+          ) : (
+            <Routes />
+          )}
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

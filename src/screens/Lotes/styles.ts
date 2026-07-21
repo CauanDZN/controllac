@@ -1,5 +1,5 @@
 import styled from 'styled-components/native';
-import {MaterialCommunityIcons} from '@expo/vector-icons';
+import {Feather, MaterialCommunityIcons} from '@expo/vector-icons';
 import {RFPercentage, RFValue} from 'react-native-responsive-fontsize';
 
 export const Container = styled.View`
@@ -12,6 +12,21 @@ export const Header = styled.View<{topInset: number}>`
   padding: ${({topInset}) => topInset + RFValue(24)}px 24px ${RFValue(24)}px;
 
   background-color: ${({theme}) => theme.colors.primary};
+
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+export const HeaderInfo = styled.View``;
+
+export const BackupButton = styled.TouchableOpacity`
+  padding: 4px;
+`;
+
+export const BackupIcon = styled(Feather)`
+  font-size: ${RFValue(22)}px;
+  color: ${({theme}) => theme.colors.shape};
 `;
 
 export const Title = styled.Text`

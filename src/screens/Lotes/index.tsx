@@ -6,6 +6,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from 'styled-components';
 
 import {BatchCard} from '@/components/BatchCard';
+import {LoadError} from '@/components/LoadError';
 import {SearchInput} from '@/components/SearchInput';
 import {StatusFilter, StatusFilterValue} from '@/components/StatusFilter';
 import {RootStackParamList} from '@/routes/types';
@@ -16,6 +17,8 @@ import {Product} from '@/types/product';
 import {getExpirationStatus} from '@/utils/date';
 
 import {
+  BackupButton,
+  BackupIcon,
   batchListContentContainerStyle,
   batchListStyle,
   Container,
@@ -25,6 +28,7 @@ import {
   EmptyText,
   FiltersArea,
   Header,
+  HeaderInfo,
   LoadContainer,
   Subtitle,
   Title,
@@ -37,6 +41,7 @@ type BatchListItem = {
 
 export function Lotes() {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [search, setSearch] = useState('');
@@ -48,14 +53,21 @@ export function Lotes() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const loadData = useCallback(async () => {
-    const [storedProducts, storedBatches] = await Promise.all([
-      productsStorage.getAll(),
-      batchesStorage.getAll(),
-    ]);
+    setHasError(false);
 
-    setProducts(storedProducts);
-    setBatches(storedBatches);
-    setIsLoading(false);
+    try {
+      const [storedProducts, storedBatches] = await Promise.all([
+        productsStorage.getAll(),
+        batchesStorage.getAll(),
+      ]);
+
+      setProducts(storedProducts);
+      setBatches(storedBatches);
+    } catch {
+      setHasError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -124,11 +136,19 @@ export function Lotes() {
   return (
     <Container>
       <Header topInset={top}>
-        <Title>Controllac</Title>
-        <Subtitle>{getSubtitle()}</Subtitle>
+        <HeaderInfo>
+          <Title>Controllac</Title>
+          <Subtitle>{getSubtitle()}</Subtitle>
+        </HeaderInfo>
+
+        <BackupButton onPress={() => navigation.navigate('Backup')}>
+          <BackupIcon name="shield" />
+        </BackupButton>
       </Header>
 
-      {batches.length === 0 ? (
+      {hasError ? (
+        <LoadError onRetry={loadData} />
+      ) : batches.length === 0 ? (
         <EmptyContainer>
           <EmptyIcon name="package-variant" />
           <EmptyText>Nenhum lote cadastrado ainda</EmptyText>

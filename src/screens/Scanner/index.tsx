@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Alert} from 'react-native';
+import {Alert, Linking} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {BarcodeType, CameraView, useCameraPermissions} from 'expo-camera';
@@ -91,6 +91,26 @@ export function Scanner() {
   }
 
   if (!permission.granted) {
+    if (!permission.canAskAgain) {
+      return (
+        <Container>
+          <Header>
+            <Title>Scanner</Title>
+          </Header>
+          <CenterContainer>
+            <InfoText>
+              A permissão de câmera foi negada. Abra as configurações do
+              aparelho pra ativá-la e poder escanear produtos.
+            </InfoText>
+            <Button
+              title="Abrir configurações"
+              onPress={() => Linking.openSettings()}
+            />
+          </CenterContainer>
+        </Container>
+      );
+    }
+
     return (
       <Container>
         <Header>
